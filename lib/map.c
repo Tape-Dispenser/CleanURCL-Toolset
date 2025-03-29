@@ -69,7 +69,7 @@ struct Map full_map(char* keys, char* values) {
 int mapGet(struct Map* map, char* key, char** output) {
   // returns 0 on success
   // returns -1 if key-value pair does not exist in map
-  int index = 0;
+  unsigned long index = 0;
   while (index < map->length) {
     if (map->keys[index] == key) {
       *output = map->values[index];
@@ -82,10 +82,12 @@ int mapGet(struct Map* map, char* key, char** output) {
 
 // add key-value pair (input new key and new value)
 int mapAdd(struct Map* map, char* key, char* value) {
+  printf("attempting to add key \"%s\" to map, with address %lx\n", key, key);
   // returns 0 on success
   // returns -1 if key-value pair already exists in map
   char* temp;
   if (mapGet(map, key, &temp) == 0) {
+    printf("Key \"%s\" already exists!\n", key);
     return -1;
   }
   
@@ -101,6 +103,7 @@ int mapAdd(struct Map* map, char* key, char* value) {
     return -1;
   }
   map->values[map->length] = value;
+  map->length++;
   return 0;
 }
 
@@ -108,7 +111,7 @@ int mapAdd(struct Map* map, char* key, char* value) {
 int mapUpdate(struct Map* map, char* key, char* value) {
   // returns 0 on success
   // returns -1 if key-value pair does not exist in map
-  int index = 0;
+  unsigned long index = 0;
   while (index < map->length) {
     if (map->keys[index] == key) {
       map->values[index] = value;
@@ -123,14 +126,12 @@ int mapUpdate(struct Map* map, char* key, char* value) {
 int mapDelete(struct Map* map, char* key) {
   // returns 0 on success
   // returns -1 if key-value pair does not exist in map
-  int index = 0;
+  unsigned long index = 0;
   while (index < map->length) {
-    if (!map->keys[index] == key) {
+    if (map->keys[index] != key) {
       index++;
       continue;
     }
-    // get index of last entry (strlen)
-    int last_entry = strlen(map->keys);
     // overwrite the entry at index with the last entry in the map
     map->keys[index] = map->keys[map->length];
     map->values[index] = map->values[map->length];
@@ -150,6 +151,7 @@ int mapDelete(struct Map* map, char* key) {
       printf("Error while reallocating memory for values string!\n");
       return -1;
     }
+    map->length--;
     return 0;
   }
   return -1;
