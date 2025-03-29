@@ -22,8 +22,8 @@
 #include <string.h>
 
 typedef struct Map {
-  unsigned long* keys;
-  unsigned long* values;
+  char** keys;
+  char** values;
   size_t length;
   size_t size;
 } Map;
@@ -31,7 +31,7 @@ typedef struct Map {
 // create a new map with empty lists (map constructor)
 struct Map empty_map() {
   struct Map map;
-  map.size = sizeof(unsigned long);
+  map.size = sizeof(char*);
   map.keys = malloc(map.size);
   map.values = malloc(map.size);
   map.length = 0;
@@ -66,7 +66,7 @@ struct Map full_map(char* keys, char* values) {
 
 
 // get value (input key)
-int mapGet(struct Map* map, unsigned long key, unsigned long* output) {
+int mapGet(struct Map* map, char* key, char** output) {
   // returns 0 on success
   // returns -1 if key-value pair does not exist in map
   int index = 0;
@@ -81,10 +81,10 @@ int mapGet(struct Map* map, unsigned long key, unsigned long* output) {
 }
 
 // add key-value pair (input new key and new value)
-int mapAdd(struct Map* map, unsigned long key, unsigned long value) {
+int mapAdd(struct Map* map, char* key, char* value) {
   // returns 0 on success
   // returns -1 if key-value pair already exists in map
-  char temp;
+  char* temp;
   if (mapGet(map, key, &temp) == 0) {
     return -1;
   }
@@ -105,7 +105,7 @@ int mapAdd(struct Map* map, unsigned long key, unsigned long value) {
 }
 
 // edit value in pair (input key and new value)
-int mapUpdate(struct Map* map, unsigned long key, unsigned long value) {
+int mapUpdate(struct Map* map, char* key, char* value) {
   // returns 0 on success
   // returns -1 if key-value pair does not exist in map
   int index = 0;
@@ -120,7 +120,7 @@ int mapUpdate(struct Map* map, unsigned long key, unsigned long value) {
 }
 
 // remove key-value pair (input key to remove)
-int mapDelete(struct Map* map, unsigned long key) {
+int mapDelete(struct Map* map, char* key) {
   // returns 0 on success
   // returns -1 if key-value pair does not exist in map
   int index = 0;

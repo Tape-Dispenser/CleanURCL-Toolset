@@ -87,11 +87,13 @@ void clean(char* urclCode) {
 
   int inString = 0;
   int inComment = 0;
-  int stringID = 0;
   char* currentString;
-  int stringIndex;
+  char* stringID = malloc(23 * sizeof(char)); // string ID is 20 max digits from a u64 + 2 for &S + 1 for null terminator
+  size_t stringIndex;
+  size_t stringCount = 0;
   size_t tokenStart;
   size_t tokenEnd;
+  Map stringMap = empty_map();
 
   index = 0;
   c = workingCopy[index];
@@ -109,8 +111,18 @@ void clean(char* urclCode) {
           currentString[stringIndex] = 0;
           tokenEnd = index;
           // printf("Found a string literal %s starting at character index %lu and ending at %lu.\n", currentString, tokenStart, tokenEnd);
-          // add string to map and replace with the string id (&1, &2, &3, etc.)
-          free(currentString);
+          // add string to map and replace with the string id (&S1, &S2, &S3, etc.)
+          stringCount++;
+          sprintf(stringID, "&S%lu", stringCount);
+          int returnCode = mapAdd(&stringMap, stringID, currentString);
+          if (returnCode != 0) {
+            printf("Error while trying to add string \"%s\" to map, with key \"%s\"\n", currentString, stringID);
+            exit(-1);
+          }
+          printf("Associated string %s with id %s\n", currentString, stringID);
+          // change currentString to a new pointer
+          // currentString's will be freed later
+          currentString = malloc(1);
         }
       }
       
@@ -174,12 +186,6 @@ void clean(char* urclCode) {
     index++;
     c = workingCopy[index];
   }
-
-  // step two:   add line numbers (ex. ADD R1 R2 R3 &L82)
-
-  // step three: remove all inline "multiline" comments (example: ADD /* comment */ R1 R2 R3)
-
-  // step four:  remove all multiline comments
 
   // step five:  remove all single line comments
 

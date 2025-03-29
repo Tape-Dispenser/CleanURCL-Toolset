@@ -22,22 +22,22 @@
 #include <stddef.h>
 
 typedef struct Map {
-  unsigned long* keys;
-  unsigned long* values;
+  char** keys;
+  char** values;
   size_t length;
   size_t size;
 } Map;
 
 struct Map empty_map();
 
-//struct Map full_map(unsigned long keys, unsigned long* values);
+//struct Map full_map(char** keys, char** values);
 
-int mapAdd(struct Map* map, unsigned long key, unsigned long value);
+int mapAdd(struct Map* map, char* key, char* value);
 
-int mapGet(struct Map* map, unsigned long key, unsigned long* output);
+int mapGet(struct Map* map, char* key, char** output);
 
-int mapUpdate(struct Map* map, unsigned long key, unsigned long value);
+int mapUpdate(struct Map* map, char* key, char* value);
 
-int mapDelete(struct Map* map, unsigned long key);
+int mapDelete(struct Map* map, char* key);
 
 #endif
