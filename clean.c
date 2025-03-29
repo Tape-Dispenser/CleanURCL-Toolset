@@ -122,7 +122,9 @@ void clean(char* urclCode) {
           printf("Associated string %s with id %s\n", currentString, stringID);
           // change currentString to a new pointer
           // currentString's will be freed later
-          currentString = malloc(1);
+          // i love introducing memory leaks intentionally
+          char* temp = malloc(23 * sizeof(char));
+          currentString = temp;
         }
       }
       

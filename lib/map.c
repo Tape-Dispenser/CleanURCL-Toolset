@@ -156,3 +156,10 @@ int mapDelete(struct Map* map, char* key) {
   }
   return -1;
 }
+
+void mapKill(Map* map) {
+  // free all memory associated with a map
+  free(map->keys);
+  free(map->values);
+  map->length = 0;
+}
