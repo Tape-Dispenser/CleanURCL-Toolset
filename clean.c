@@ -88,7 +88,6 @@ void clean(char* urclCode) {
   int inString = 0;
   int inComment = 0;
   char* currentString;
-  char* stringID = malloc(23 * sizeof(char)); // string ID is 20 max digits from a u64 + 2 for &S + 1 for null terminator
   size_t stringIndex;
   size_t stringCount = 0;
   size_t tokenStart;
@@ -113,6 +112,7 @@ void clean(char* urclCode) {
           // printf("Found a string literal %s starting at character index %lu and ending at %lu.\n", currentString, tokenStart, tokenEnd);
           // add string to map and replace with the string id (&S1, &S2, &S3, etc.)
           stringCount++;
+          char* stringID = malloc(23 * sizeof(char)); // string ID is 20 max digits from a u64 + 2 for &S + 1 for null terminator
           sprintf(stringID, "&S%lu", stringCount);
           int returnCode = mapAdd(&stringMap, stringID, currentString);
           if (returnCode != 0) {
