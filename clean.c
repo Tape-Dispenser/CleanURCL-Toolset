@@ -98,39 +98,42 @@ void clean(char* urclCode) {
   c = workingCopy[index];
   while (c != 0) {
     c = workingCopy[index];
-
     if (inString == 1) {
       currentString[stringIndex] = c;
       stringIndex++;
       currentString = realloc(currentString, (stringIndex + 1) * sizeof(char));
-      if (c == '"' || c == '\'') {
-        char prev = workingCopy[index - 1];
-        if (prev != '\\') {
-          inString = 0;
-          currentString[stringIndex] = 0;
-          tokenEnd = index;
-          // printf("Found a string literal %s starting at character index %lu and ending at %lu.\n", currentString, tokenStart, tokenEnd);
-          // add string to map and replace with the string id (&S1, &S2, &S3, etc.)
-          stringCount++;
-          char* stringID = malloc(23 * sizeof(char)); // string ID is 20 max digits from a u64 + 2 for &S + 1 for null terminator
-          sprintf(stringID, "&S%lu", stringCount);
-          int returnCode = mapAdd(&stringMap, stringID, currentString);
-          if (returnCode != 0) {
-            printf("Error while trying to add string \"%s\" to map, with key \"%s\"\n", currentString, stringID);
-            exit(-1);
-          }
-          printf("Associated string %s with id %s\n", currentString, stringID);
-          // change currentString to a new pointer
-          // currentString's will be freed later
-          // i love introducing memory leaks intentionally
-          char* temp = malloc(23 * sizeof(char));
-          currentString = temp;
-        }
+      if (c != '"' && c != '\'') {
+        index++;
+        continue;
       }
-      
-      
+      char prev = workingCopy[index - 1];
+      if (prev == '\\') {
+        index++;
+        continue;
+      }
+      inString = 0;
+      currentString[stringIndex] = 0;
+      tokenEnd = index;
+      // printf("Found a string literal %s starting at character index %lu and ending at %lu.\n", currentString, tokenStart, tokenEnd);
+      // add string to map and replace with the string id (&S1, &S2, &S3, etc.)
+      stringCount++;
+      char* stringID = malloc(23 * sizeof(char)); // string ID is 20 max digits from a u64 + 2 for &S + 1 for null terminator
+      sprintf(stringID, "&S%lu", stringCount);
+      int returnCode = mapAdd(&stringMap, stringID, currentString);
+      if (returnCode != 0) {
+        printf("Error while trying to add string \"%s\" to map, with key \"%s\"\n", currentString, stringID);
+        exit(-1);
+      }
+      printf("Associated string %s with id %s\n", currentString, stringID);
+      // change currentString to a new pointer
+      // currentString's will be freed later
+      // i love introducing memory leaks intentionally
+      char* temp = malloc(23 * sizeof(char));
+      currentString = temp;
+
     } else if (inComment == 1) {
-      if (c == '/' && workingCopy[index-1] == '*') {
+      char prev = workingCopy[index - 1];
+      if (c == '/' && prev == '*') {
         inComment = 0;
         tokenEnd = index;
         // delete comment
@@ -186,7 +189,6 @@ void clean(char* urclCode) {
     }  
 
     index++;
-    c = workingCopy[index];
   }
 
   // step five:  remove all single line comments
