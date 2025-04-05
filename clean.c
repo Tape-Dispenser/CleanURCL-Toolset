@@ -64,12 +64,12 @@ void clean(char* urclCode) {
 
       // get length sprintf will return
       FILE* devNull = fopen("/dev/null", "w");
-      size_t length = fprintf(devNull, "&L%lu", lineCount);
+      size_t length = fprintf(devNull, " &L%lu", lineCount);
       fclose(devNull);
       // allocate memory for sprintf
       char* lineMarker = malloc((length + 1) * sizeof(char));
 
-      sprintf(lineMarker, "&L%lu", lineCount);
+      sprintf(lineMarker, " &L%lu", lineCount);
       char* temp = insertString(workingCopy, lineMarker, index);
       free(workingCopy);
       free(lineMarker);
@@ -125,10 +125,17 @@ void clean(char* urclCode) {
         exit(-1);
       }
       printf("Associated string %s with id %s\n", currentString, stringID);
+      
+      // replace string in workingCopy with string identifier
+      char* temp = replaceString(workingCopy, stringID, tokenStart, tokenEnd);      
+      free(workingCopy);
+      workingCopy = temp;
+      temp = NULL;
+      index = tokenStart + strlen(stringID);
       // change currentString to a new pointer
       // currentString's will be freed later
       // i love introducing memory leaks intentionally
-      char* temp = malloc(23 * sizeof(char));
+      temp = malloc(23 * sizeof(char));
       currentString = temp;
 
     } else if (inComment == 1) {
@@ -198,6 +205,23 @@ void clean(char* urclCode) {
   // step seven: put all characters and strings back
 
   // step eight: output code
+  char* key;
+  char* value;
+  puts("Strings in stringMap:");
+  index = 0;
+  while (index < stringMap.length) {
+    key = stringMap.keys[index];
+    value = stringMap.values[index];
+    printf("%s : %s\n", key, value);
+    free(key);
+    free(value);
+    stringMap.keys[index] = NULL;
+    stringMap.values[index] = NULL;
+    index++;
+  }
+  stringMap.length = 0;
+  puts("");
+  puts("Output Code:");
   printf("%s\n", workingCopy);
   free(workingCopy);
 }

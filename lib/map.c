@@ -71,7 +71,8 @@ int mapGet(struct Map* map, char* key, char** output) {
   // returns -1 if key-value pair does not exist in map
   unsigned long index = 0;
   while (index < map->length) {
-    if (map->keys[index] == key) {
+    int result = strcmp(key, map->keys[index]);
+    if (result == 0) {
       *output = map->values[index];
       return 0;
     }
