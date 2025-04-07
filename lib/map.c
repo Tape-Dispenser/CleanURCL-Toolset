@@ -129,7 +129,8 @@ int mapDelete(struct Map* map, char* key) {
   // returns -1 if key-value pair does not exist in map
   unsigned long index = 0;
   while (index < map->length) {
-    if (map->keys[index] != key) {
+    int result = strcmp(key, map->keys[index]);
+    if (result != 0) {
       index++;
       continue;
     }

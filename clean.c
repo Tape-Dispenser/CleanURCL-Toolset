@@ -86,6 +86,7 @@ void clean(char* urclCode) {
   //             source string must be put into a map
 
   int inString = 0;
+  int inMultiline = 0;
   int inComment = 0;
   char* currentString;
   size_t stringIndex;
@@ -98,6 +99,7 @@ void clean(char* urclCode) {
   c = workingCopy[index];
   while (c != 0) {
     c = workingCopy[index];
+    //printf("Index: %lu, In String? %i, In Multiline? %i, In Comment? %i\n", index, inString, inMultiline, inComment);
     if (inString == 1) {
       currentString[stringIndex] = c;
       stringIndex++;
@@ -138,10 +140,10 @@ void clean(char* urclCode) {
       temp = malloc(23 * sizeof(char));
       currentString = temp;
 
-    } else if (inComment == 1) {
+    } else if (inMultiline == 1) {
       char prev = workingCopy[index - 1];
       if (c == '/' && prev == '*') {
-        inComment = 0;
+        inMultiline = 0;
         tokenEnd = index;
         // delete comment
         printf("Found a multiline comment starting at character index %lu and ending at %lu.\n", tokenStart, tokenEnd);
@@ -171,8 +173,18 @@ void clean(char* urclCode) {
         index = tokenStart;
         continue; // no need to increment index, it already points to the character immediately after the (now deleted) comment
       }
-
-
+    } else if (inComment == 1) {
+      if (c == '\n') { // detect the end of the line
+        inComment = 0;
+        tokenEnd = index;
+        // delete comment
+        printf("Found a single line comment starting at character index %lu and ending at %lu.\n", tokenStart, tokenEnd);
+        char* temp = replaceString(workingCopy, " ", tokenStart, tokenEnd);
+        free(workingCopy);
+        workingCopy = temp;
+        temp = NULL;
+        index = tokenStart;
+      }
     } else {
       switch (c) {
         case '"':
@@ -185,11 +197,24 @@ void clean(char* urclCode) {
           tokenStart = index;
           break;
         case '*':
+          if (index == 0) {
+            break; // make sure we don't do an illegal memory access
+          }
+          if (workingCopy[index-1] != '/') {
+            break;
+          }
+          inMultiline = 1;
+          tokenStart = index - 1; // make sure / in /* gets selected too
+          break;
+        case '/':
+          if (index == 0) {
+            break; // make sure we don't do an illegal memory access
+          }
           if (workingCopy[index-1] != '/') {
             break;
           }
           inComment = 1;
-          tokenStart = index - 1; // make sure / in /* gets selected too
+          tokenStart = index - 1;
           break;
       }
 
@@ -197,8 +222,6 @@ void clean(char* urclCode) {
 
     index++;
   }
-
-  // step five:  remove all single line comments
 
   // step six:   remove all extra whitespace
 
