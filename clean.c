@@ -49,49 +49,7 @@ void clean(char* urclCode) {
   char* workingCopy = malloc(sizeof(char) * (strlen(urclCode) + 1));
   strcpy(workingCopy, urclCode);
 
-  // step one:   add line numbers
-  size_t index = 0;
-  char c = workingCopy[index];
-  if (lineNums != 0) {
-    size_t lineCount = 0;
-    while (c != 0) {
-      if (c != '\n') {
-        index++;
-        c = workingCopy[index];
-        continue;
-      }
-      lineCount++;
-
-      // find adequate insert point for line marker
-      
-
-      // get length sprintf will return
-      FILE* devNull = fopen("/dev/null", "w");
-      size_t length = fprintf(devNull, " &L%lu", lineCount);
-      fclose(devNull);
-
-      // allocate memory for sprintf
-      char* lineMarker = malloc((length + 1) * sizeof(char));
-      sprintf(lineMarker, " &L%lu", lineCount);
-      char* temp = insertString(workingCopy, lineMarker, index);
-
-      // Prevent memory leaks
-      free(workingCopy);
-      free(lineMarker);
-      workingCopy = temp;
-      temp = NULL;
-
-      // prevent bad indexing
-      index+=length+1;
-      c = workingCopy[index];
-    }
-  }
-  
-
-
-  // step two:   replace all strings with a replacement key (ex. &S1, &S2, &S3, etc.), remove all multiline comments,
-  //             source string must be put into a map
-
+  // step one:   replace all strings with a replacement key (ex. &S1, &S2, &S3, etc.), and remove all types of comments
   int inString = 0;
   int inMultiline = 0;
   int inComment = 0;
@@ -102,11 +60,10 @@ void clean(char* urclCode) {
   size_t tokenEnd;
   Map stringMap = empty_map();
 
-  index = 0;
-  c = workingCopy[index];
+  size_t index = 0;
+  char c = workingCopy[index];
   while (c != 0) {
     c = workingCopy[index];
-    //printf("Index: %lu, In String? %i, In Multiline? %i, In Comment? %i\n", index, inString, inMultiline, inComment);
     if (inString == 1) {
       currentString[stringIndex] = c;
       stringIndex++;
@@ -123,7 +80,6 @@ void clean(char* urclCode) {
       inString = 0;
       currentString[stringIndex] = 0;
       tokenEnd = index;
-      // printf("Found a string literal %s starting at character index %lu and ending at %lu.\n", currentString, tokenStart, tokenEnd);
       // add string to map and replace with the string id (&S1, &S2, &S3, etc.)
       stringCount++;
       char* stringID = malloc(23 * sizeof(char)); // string ID is 20 max digits from a u64 + 2 for &S + 1 for null terminator
@@ -133,7 +89,6 @@ void clean(char* urclCode) {
         printf("Error while trying to add string \"%s\" to map, with key \"%s\"\n", currentString, stringID);
         exit(-1);
       }
-      printf("Associated string %s with id %s\n", currentString, stringID);
       
       // replace string in workingCopy with string identifier
       char* temp = replaceString(workingCopy, stringID, tokenStart, tokenEnd);      
@@ -153,14 +108,12 @@ void clean(char* urclCode) {
         inMultiline = 0;
         tokenEnd = index;
         // delete comment
-        printf("Found a multiline comment starting at character index %lu and ending at %lu.\n", tokenStart, tokenEnd);
         // if multiline contains a newline i need to replace the comment with a newline
         size_t tokenIndex = tokenStart;
         size_t newLines = 0;
         while (tokenIndex <= tokenEnd) {
           if (workingCopy[tokenIndex] == '\n') {
             newLines++;
-            break;
           }
           tokenIndex++;
         }
@@ -172,6 +125,7 @@ void clean(char* urclCode) {
             jndex++;
             newLines--;
           }
+          replacement[jndex] = '\0';
           char* temp = replaceString(workingCopy, replacement, tokenStart, tokenEnd);
           free(workingCopy);
           workingCopy = temp;
@@ -190,9 +144,8 @@ void clean(char* urclCode) {
     } else if (inComment == 1) {
       if (c == '\n') { // detect the end of the line
         inComment = 0;
-        tokenEnd = index;
+        tokenEnd = index - 1;  // -1 in order to not remove newlines before adding line markers
         // delete comment
-        printf("Found a single line comment starting at character index %lu and ending at %lu.\n", tokenStart, tokenEnd);
         char* temp = replaceString(workingCopy, " ", tokenStart, tokenEnd);
         free(workingCopy);
         workingCopy = temp;
@@ -237,11 +190,67 @@ void clean(char* urclCode) {
     index++;
   }
 
-  // step six:   remove all extra whitespace
+  // add line numbers
+  index = 0;
+  c = workingCopy[index];
+  if (lineNums != 0) {
+    size_t lineCount = 0;
+    while (c != 0) {
+      if (c != '\n') {
+        index++;
+        c = workingCopy[index];
+        continue;
+      }
+      lineCount++;
 
-  // step seven: put all characters and strings back
+      // get length sprintf will return
+      FILE* devNull = fopen("/dev/null", "w");
+      size_t length = fprintf(devNull, " &L%lu", lineCount);
+      fclose(devNull);
 
-  // step eight: output code
+      // allocate memory for sprintf
+      char* lineMarker = malloc((length + 1) * sizeof(char));
+      sprintf(lineMarker, " &L%lu", lineCount);
+      char* temp = insertString(workingCopy, lineMarker, index);
+
+      // Prevent memory leaks
+      free(workingCopy);
+      free(lineMarker);
+      workingCopy = temp;
+      temp = NULL;
+
+      // prevent bad indexing
+      index+=length+1;
+      c = workingCopy[index];
+    }
+    // Add another line marker at the end of the final line
+    lineCount++;
+    FILE* devNull = fopen("/dev/null", "w");
+    size_t length = fprintf(devNull, " &L%lu", lineCount);
+    fclose(devNull);
+
+    // allocate memory for sprintf
+    char* lineMarker = malloc((length + 1) * sizeof(char));
+    sprintf(lineMarker, " &L%lu", lineCount);
+    char* temp = insertString(workingCopy, lineMarker, index);
+
+    // Prevent memory leaks
+    free(workingCopy);
+    free(lineMarker);
+    workingCopy = temp;
+    temp = NULL;
+
+    // prevent bad indexing
+    index+=length+1;
+    c = workingCopy[index];
+  }
+
+  // step three:   remove all extra whitespace
+
+  // step four: put all characters and strings back
+
+  // step five: output code
+  
   char* key;
   char* value;
   puts("Strings in stringMap:");
@@ -269,7 +278,6 @@ void clean(char* urclCode) {
 int main(int argc, char **argv) {
   int option;
   char* urclPath;
-  char* temp_arg;
 
   // parse arguments
   while ((option = getopt(argc, argv, ":hno")) != -1) {
@@ -317,8 +325,6 @@ int main(int argc, char **argv) {
   }
   // write null terminator
   code[index] = 0;
-  printf("Length of input code: %lu, char at end: '%c' (%u)\n", strlen(code), code[index], code[index]);
-  printf("Index: %lu\n", index);
 
   //printf("%s\n", code);
   fclose(urclFile);
