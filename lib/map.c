@@ -83,7 +83,6 @@ int mapGet(struct Map* map, char* key, char** output) {
 
 // add key-value pair (input new key and new value)
 int mapAdd(struct Map* map, char* key, char* value) {
-  printf("attempting to add key \"%s\" to map, with address %lx\n", key, key);
   // returns 0 on success
   // returns -1 if key-value pair already exists in map
   char* temp;

@@ -62,19 +62,26 @@ void clean(char* urclCode) {
       }
       lineCount++;
 
+      // find adequate insert point for line marker
+      
+
       // get length sprintf will return
       FILE* devNull = fopen("/dev/null", "w");
       size_t length = fprintf(devNull, " &L%lu", lineCount);
       fclose(devNull);
+
       // allocate memory for sprintf
       char* lineMarker = malloc((length + 1) * sizeof(char));
-
       sprintf(lineMarker, " &L%lu", lineCount);
       char* temp = insertString(workingCopy, lineMarker, index);
+
+      // Prevent memory leaks
       free(workingCopy);
       free(lineMarker);
       workingCopy = temp;
       temp = NULL;
+
+      // prevent bad indexing
       index+=length+1;
       c = workingCopy[index];
     }
@@ -149,16 +156,23 @@ void clean(char* urclCode) {
         printf("Found a multiline comment starting at character index %lu and ending at %lu.\n", tokenStart, tokenEnd);
         // if multiline contains a newline i need to replace the comment with a newline
         size_t tokenIndex = tokenStart;
-        int containsNewline = 0;
+        size_t newLines = 0;
         while (tokenIndex <= tokenEnd) {
           if (workingCopy[tokenIndex] == '\n') {
-            containsNewline = 1;
+            newLines++;
             break;
           }
           tokenIndex++;
         }
-        if (containsNewline == 1) {
-          char* temp = replaceString(workingCopy, "\n", tokenStart, tokenEnd);
+        if (newLines >= 1) {
+          char* replacement = malloc((newLines + 1) * sizeof(char));
+          size_t jndex = 0;
+          while (newLines > 0) {
+            replacement[jndex] = '\n';
+            jndex++;
+            newLines--;
+          }
+          char* temp = replaceString(workingCopy, replacement, tokenStart, tokenEnd);
           free(workingCopy);
           workingCopy = temp;
           temp = NULL;
