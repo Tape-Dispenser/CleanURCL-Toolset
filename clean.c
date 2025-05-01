@@ -53,41 +53,44 @@ int lineNums = 0;
       // horizontal tab (0x09)
     // define "token" as any combination of sequential, 
     // non-whitespace character
-void stripWhitespace(char* input) {
+char* stripWhitespace(char* input) {
   size_t index = 0;
-  char c = input[index];
   size_t whiteStart = 0;
   size_t whiteEnd = 0;
   int hasToken = 0;
   int inWhitespace = 0;
   char* temp;
 
+  char* workingCopy;
+  workingCopy = malloc((strlen(input) + 1) * sizeof(char));
+  strcpy(workingCopy, input);
+
+  char c = workingCopy[index];
   while (c != '\0') {
     if (inWhitespace) {
       if (isWhitespace(c)) {
         whiteEnd = index;
         index++;
-        c = input[index];
+        c = workingCopy[index];
         continue;
       }
       inWhitespace = 0;
       if (hasToken) {
-        temp = replaceString(input, " ", whiteStart, whiteEnd);
-        free(input);
-        input = temp;
+        temp = replaceString(workingCopy, " ", whiteStart, whiteEnd);
+        free(workingCopy);
+        workingCopy = temp;
         temp = NULL;
         index = whiteStart + 1;
       }
       else { 
-        temp = cutString(input, whiteStart, whiteEnd);
-        free(input);
-        input = temp;
+        temp = cutString(workingCopy, whiteStart, whiteEnd);
+        free(workingCopy);
+        workingCopy = temp;
         temp = NULL;
         index = whiteStart;
       }
-      c = input[index];
+      c = workingCopy[index];
       continue;
-      
     } 
     else {
       if (isWhitespace(c)) {
@@ -100,11 +103,11 @@ void stripWhitespace(char* input) {
       }
     }
     
-    
-    
     index++;
-    c = input[index];
+    c = workingCopy[index];
   }
+
+  return workingCopy;
 }
 
 
@@ -320,18 +323,20 @@ void clean(char* urclCode) {
   c = workingCopy[index];
   char* line = malloc(1 * sizeof(char));
   size_t lineIndex = 0;
+  char* temp;
 
   while (c != 0) {
     c = workingCopy[index];
-    //printf("Index: %lu, Char at index: %c (%u)", index, c, c);
     if (c == '\n') {
       line[lineIndex] = '\0';
       printf("Input Line: \"%s\"\n", line);
-      stripWhitespace(line);
-      printf("Output Line: \"%s\"\n", line);
-      index++;
+      temp = stripWhitespace(line);
+      printf("Output Line: \"%s\"\n", temp);
       free(line);
-      puts("freed successfully");
+      line = temp;
+      temp = NULL;
+
+      index++;
       line = malloc(1 * sizeof(char));
       lineIndex = 0;
       continue;
@@ -345,20 +350,12 @@ void clean(char* urclCode) {
   }
   // process the last line in the code (it ends with \0 not \n)
   line[lineIndex] = '\0';
-  stripWhitespace(line);
-  index = 0;
-  free(line);      
-  
-
-    // iterate line by line
-    // remove all leading whitespace
-    // remove all whitespace in between tokens and insert one space character in between
-    
-    
-
-    
-     
-
+  printf("Input Line: \"%s\"\n", line);
+  temp = stripWhitespace(line);
+  printf("Output Line: \"%s\"\n", temp);
+  free(line);
+  line = temp;
+  temp = NULL;    
 
   // step four: put all characters and strings back
 
