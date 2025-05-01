@@ -45,6 +45,69 @@ int lineNums = 0;
 
 // #############################   CODE  #############################
 
+// step three: remove all extra whitespace between tokens
+    // whitespace is defined as:
+      // space (0x20)
+      // line feed (0x0A)
+      // carriage return (0x0D)
+      // horizontal tab (0x09)
+    // define "token" as any combination of sequential, 
+    // non-whitespace character
+void stripWhitespace(char* input) {
+  size_t index = 0;
+  char c = input[index];
+  size_t whiteStart = 0;
+  size_t whiteEnd = 0;
+  int hasToken = 0;
+  int inWhitespace = 0;
+  char* temp;
+
+  while (c != '\0') {
+    if (inWhitespace) {
+      if (isWhitespace(c)) {
+        whiteEnd = index;
+        index++;
+        c = input[index];
+        continue;
+      }
+      inWhitespace = 0;
+      if (hasToken) {
+        temp = replaceString(input, " ", whiteStart, whiteEnd);
+        free(input);
+        input = temp;
+        temp = NULL;
+        index = whiteStart + 1;
+      }
+      else { 
+        temp = cutString(input, whiteStart, whiteEnd);
+        free(input);
+        input = temp;
+        temp = NULL;
+        index = whiteStart;
+      }
+      c = input[index];
+      continue;
+      
+    } 
+    else {
+      if (isWhitespace(c)) {
+        inWhitespace = 1;
+        whiteStart = index;
+        whiteEnd = index;
+      }
+      else {
+        hasToken = 1;
+      }
+    }
+    
+    
+    
+    index++;
+    c = input[index];
+  }
+}
+
+
 void clean(char* urclCode) {
   char* workingCopy = malloc(sizeof(char) * (strlen(urclCode) + 1));
   strcpy(workingCopy, urclCode);
@@ -245,7 +308,57 @@ void clean(char* urclCode) {
     c = workingCopy[index];
   }
 
-  // step three:   remove all extra whitespace
+
+  // step three: remove all extra whitespace
+    // whitespace is defined as:
+      // space (0x20)
+      // line feed (0x0A)
+      // carriage return (0x0D)
+      // horizontal tab (0x09)
+    // define "token" as any combination of sequential, non-whitespace characters
+  index = 0;
+  c = workingCopy[index];
+  char* line = malloc(1 * sizeof(char));
+  size_t lineIndex = 0;
+
+  while (c != 0) {
+    c = workingCopy[index];
+    //printf("Index: %lu, Char at index: %c (%u)", index, c, c);
+    if (c == '\n') {
+      line[lineIndex] = '\0';
+      printf("Input Line: \"%s\"\n", line);
+      stripWhitespace(line);
+      printf("Output Line: \"%s\"\n", line);
+      index++;
+      free(line);
+      puts("freed successfully");
+      line = malloc(1 * sizeof(char));
+      lineIndex = 0;
+      continue;
+    }
+  
+    line[lineIndex] = c;
+    line = realloc(line, (lineIndex + 2) * sizeof(char));
+    lineIndex++;
+    index++;
+    continue;
+  }
+  // process the last line in the code (it ends with \0 not \n)
+  line[lineIndex] = '\0';
+  stripWhitespace(line);
+  index = 0;
+  free(line);      
+  
+
+    // iterate line by line
+    // remove all leading whitespace
+    // remove all whitespace in between tokens and insert one space character in between
+    
+    
+
+    
+     
+
 
   // step four: put all characters and strings back
 
@@ -253,12 +366,12 @@ void clean(char* urclCode) {
   
   char* key;
   char* value;
-  puts("Strings in stringMap:");
+  //puts("Strings in stringMap:");
   index = 0;
   while (index < stringMap.length) {
     key = stringMap.keys[index];
     value = stringMap.values[index];
-    printf("%s : %s\n", key, value);
+    //printf("%s : %s\n", key, value);
     free(key);
     free(value);
     stringMap.keys[index] = NULL;
@@ -267,8 +380,8 @@ void clean(char* urclCode) {
   }
   stringMap.length = 0;
   puts("");
-  puts("Output Code:");
-  printf("%s\n", workingCopy);
+  //puts("Output Code:");
+  //printf("%s\n", workingCopy);
   free(workingCopy);
 }
 

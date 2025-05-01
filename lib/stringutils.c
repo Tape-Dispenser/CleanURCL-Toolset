@@ -24,7 +24,7 @@ char* cutString(char* input, size_t start, size_t end) {
   // cut out a section from input string between start and end indeces (start and end index are both cut out)
   
   // sanity check inputs
-  if (start >= end) {
+  if (start > end) {
     return NULL;
   }
   size_t originalLen = strlen(input);
@@ -164,4 +164,16 @@ void printUntil(char* string, size_t stopIndex) {
   printf("%s\n", newstring);
   free(newstring);
   return;
+}
+
+int isWhitespace(char input) {
+  switch (input) {
+    case ' ':
+    case '\n':
+    case '\t':
+    case '\r':
+      return 1;
+    default:
+      return 0;
+  }
 }
