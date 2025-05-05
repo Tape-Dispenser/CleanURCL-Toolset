@@ -385,10 +385,76 @@ void clean(char* urclCode) {
   workingCopy = temp;
   temp = NULL;
 
-  // reset index to prevent memory leaks
-  index = 0;
-
   // step four: put all characters and strings back
+  
+  int inToken = 0;
+  int tokenIndex = 0;
+  tokenStart = 0;
+  tokenEnd = 0;
+
+  char* token = malloc(1 * sizeof(char));
+  token[0] = '\0';
+
+  index = 0;
+  c = workingCopy[index];
+  while (c != '\0') {
+
+    if (inToken) {
+      if (isWhitespace(c)) {
+        // test if token is a string (&SX)
+
+        size_t tokenLen = strlen(token);
+        if (tokenLen >= 3) {
+          if (token[0] == '&' && token[1] == 'S') {
+            printf("Detected string token starting at index %lu with char %c", tokenStart, workingCopy[tokenIndex]);
+            char* value;
+            int returnCode = mapGet(&stringMap, token, &value);
+            if (returnCode != 0) {
+              printf("Failed to find string with key \"%s\"!\n", token);
+              exit(-1);
+            }
+            temp = replaceString(workingCopy, value, tokenStart, tokenEnd);
+            free(workingCopy);
+            workingCopy = temp;
+            temp = NULL;
+            index = tokenStart + strlen(value) - 1; // minus one so it still increments properly
+            // this could be fixed with an early return
+            // i dont wanna do an early return tho >:(
+          }
+        }
+
+        free(token);
+        tokenIndex = 0;
+        token = malloc(1 * sizeof(char));
+        token[tokenIndex] = '\0';
+        inToken = 0;
+        
+      }
+      else {
+        token = realloc(token, (strlen(token) + 2) * sizeof(char));
+        token[tokenIndex] = c;
+        tokenIndex++;
+        token[tokenIndex] = '\0';
+        tokenEnd++;
+      }
+    }
+    else {
+      if (!isWhitespace(c)) {
+        token = realloc(token, 2 * sizeof(char));
+        token[0] = c;
+        token[1] = '\0';
+        inToken = 1;
+        tokenIndex++;
+        tokenStart = index;
+        tokenEnd = index;
+      }
+    }
+    
+    
+    index++;
+    c = workingCopy[index];
+  }
+
 
   // step five: output code
   
