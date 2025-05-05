@@ -324,21 +324,39 @@ void clean(char* urclCode) {
   char* line = malloc(1 * sizeof(char));
   size_t lineIndex = 0;
   char* temp;
+  size_t lineStart = 0;
+  size_t lineEnd = 0;
 
   while (c != 0) {
-    c = workingCopy[index];
     if (c == '\n') {
+      // end of line reached
+      lineEnd = index;
       line[lineIndex] = '\0';
-      printf("Input Line: \"%s\"\n", line);
+      //printf("Input Line: \"%s\"\n", line);
       temp = stripWhitespace(line);
-      printf("Output Line: \"%s\"\n", temp);
+      //printf("Output Line: \"%s\"\n", temp);
       free(line);
       line = temp;
       temp = NULL;
 
-      index++;
+      // replace null at end of returned line with a newline
+      size_t lineLen = strlen(line);
+      line = realloc(line, (lineLen + 2) * sizeof(char));
+      line[lineLen] = '\n';
+      line[lineLen + 1] = '\0';
+
+      // put cleaned line back into code
+      temp = replaceString(workingCopy, line, lineStart, lineEnd);
+      free(workingCopy);
+      workingCopy = temp;
+      temp = NULL;
+
+      // reset variables for next line
+      index = lineStart + lineLen + 1;
       line = malloc(1 * sizeof(char));
       lineIndex = 0;
+      lineStart = index;
+      c = workingCopy[index];
       continue;
     }
   
@@ -346,16 +364,29 @@ void clean(char* urclCode) {
     line = realloc(line, (lineIndex + 2) * sizeof(char));
     lineIndex++;
     index++;
+    c = workingCopy[index];
     continue;
   }
   // process the last line in the code (it ends with \0 not \n)
+  lineEnd = index - 1;
   line[lineIndex] = '\0';
-  printf("Input Line: \"%s\"\n", line);
   temp = stripWhitespace(line);
-  printf("Output Line: \"%s\"\n", temp);
   free(line);
   line = temp;
-  temp = NULL;    
+  temp = NULL;
+
+  size_t lineLen = strlen(line);
+  line = realloc(line, (lineLen + 2) * sizeof(char));
+  line[lineLen] = '\n';
+  line[lineLen + 1] = '\0';
+
+  temp = replaceString(workingCopy, line, lineStart, lineEnd);
+  free(workingCopy);
+  workingCopy = temp;
+  temp = NULL;
+
+  // reset index to prevent memory leaks
+  index = 0;
 
   // step four: put all characters and strings back
 
@@ -377,8 +408,8 @@ void clean(char* urclCode) {
   }
   stringMap.length = 0;
   puts("");
-  //puts("Output Code:");
-  //printf("%s\n", workingCopy);
+  puts("Output Code:");
+  printf("%s\n", workingCopy);
   free(workingCopy);
 }
 
