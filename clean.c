@@ -1,7 +1,7 @@
 /*
  * clean.c: URCL Code cleaner, for use as the first step in a transpiler toolchain,
  *          or as a standalone program
- * Copyright (C) 2025, Ada Gramiak, <adadispenser@gmail.com>
+ * Copyright (C) 2025, Ada (Tape), <adadispenser@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -406,7 +406,6 @@ void clean(char* urclCode) {
         size_t tokenLen = strlen(token);
         if (tokenLen >= 3) {
           if (token[0] == '&' && token[1] == 'S') {
-            printf("Detected string token starting at index %lu with char %c", tokenStart, workingCopy[tokenIndex]);
             char* value;
             int returnCode = mapGet(&stringMap, token, &value);
             if (returnCode != 0) {
@@ -473,8 +472,6 @@ void clean(char* urclCode) {
     index++;
   }
   stringMap.length = 0;
-  puts("");
-  puts("Output Code:");
   printf("%s\n", workingCopy);
   free(workingCopy);
 }

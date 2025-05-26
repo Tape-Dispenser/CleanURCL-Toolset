@@ -1,6 +1,6 @@
 /*
  * stringutils.h: Collection of string utilities I've written over time
- * Copyright (C) 2025, Ada Gramiak, <adadispenser@gmail.com>
+ * Copyright (C) 2025, Ada (Tape), <adadispenser@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published

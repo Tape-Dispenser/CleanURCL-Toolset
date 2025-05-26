@@ -1,7 +1,7 @@
 /*
- * map.h: Map library written for passphrase generator
+ * parse.c: parses URCL code into structs useable by the next step in a transpiler toolchain,
+ *          along with doing error checking
  * Copyright (C) 2025, Ada (Tape), <adadispenser@gmail.com>
- *   Special thanks to: Stella
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -16,28 +16,3 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-#ifndef MAP_H
-#define MAP_H
-#include <stddef.h>
-
-typedef struct Map {
-  char** keys;
-  char** values;
-  size_t length;
-  size_t size;
-} Map;
-
-struct Map empty_map();
-
-//struct Map full_map(char** keys, char** values);
-
-int mapAdd(struct Map* map, char* key, char* value);
-
-int mapGet(struct Map* map, char* key, char** output);
-
-int mapUpdate(struct Map* map, char* key, char* value);
-
-int mapDelete(struct Map* map, char* key);
-
-#endif
