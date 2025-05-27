@@ -179,6 +179,7 @@ int isWhitespace(char input) {
 }
 
 char* byteToAscii(unsigned char input) {
+  // TODO: reverse the string
   char* output = malloc(2 * sizeof(char));
   unsigned int outputLength = 1;
 
