@@ -1,5 +1,6 @@
 /*
- * stringutils.h: Collection of string utilities I've written over time
+ * parse.h: parses URCL code into structs useable by the next step in a transpiler toolchain,
+ *          along with doing error checking
  * Copyright (C) 2025, Ada (Tape), <adadispenser@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,22 +17,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef STRINGUTILS_H
-#define STRINGUTILS_H
-#include <string.h>
+#ifndef PARSE_H
+#define PARSE_H
 
-char* cutString(char* input, size_t start, size_t end);
+struct Line {
+  int originalLineNum;
+  char type;
+  /*
+  valid line types:
+    'h': header
+    'm': macro
+    'l': label
+    'i': instruction
+    'd': directive
+  if a line object has a type other than these 5 valid types an error should be thrown
+  */
+  char** tokens;
+};
 
-char* replaceString(char* base, char* replacement, size_t start, size_t end);
+char* codeFromFile(char* path);
 
-char* insertString(char* base, char* insert, size_t insertIndex);
-
-void printUntil(char* string, size_t stopIndex);
-
-int isWhitespace(char input);
-
-char* stringToAscii(char* input);
-
-char* byteToAscii(unsigned char input);
+struct Line* tokenize(char* code);
 
 #endif

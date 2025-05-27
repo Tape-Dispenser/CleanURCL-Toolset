@@ -177,3 +177,51 @@ int isWhitespace(char input) {
       return 0;
   }
 }
+
+char* byteToAscii(unsigned char input) {
+  char* output = malloc(2 * sizeof(char));
+  unsigned int outputLength = 1;
+
+  int index = -1;
+  char digit;
+  do {
+    index++;
+    digit = input % 10;
+    input = input / 10;
+    outputLength += 1;
+    output = realloc(output, outputLength * sizeof(char));
+    output[index] = digit + '0';
+  }
+  while (input > 0);
+  output[++index] = '\0';
+  return output;
+}
+
+char* stringToAscii(char* input) {
+  // convert string to space-seperated integer strings ("hello!" -> "104 101 108 108 111 33 0")
+  size_t index = 0;
+  size_t outputIndex = 0;
+  char c;
+  char* output = malloc(sizeof(char));
+  output[0] = '\0';
+  char* temp;
+  size_t oldLen;
+  do {
+    c = input[index];
+    temp = insertString(output, byteToAscii(c), outputIndex);
+    free(output);
+    output = temp;
+    temp = NULL;
+    // put space at end of string
+    oldLen = strlen(output);
+    output = realloc(output, (oldLen + 2) * sizeof(char));
+    output[oldLen] = ' ';
+    output[oldLen + 1] = '\0';
+    outputIndex = strlen(output);
+    index++;
+    
+  } while (c != '\0');
+  // remove trailing whitespace
+  output[strlen(output)] = '\0';
+  return output;
+}

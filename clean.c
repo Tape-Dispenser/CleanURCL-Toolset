@@ -386,6 +386,7 @@ void clean(char* urclCode) {
   temp = NULL;
 
   // step four: put all characters and strings back
+  // TODO: Replace string and character literals with decimal immediates
   
   int inToken = 0;
   int tokenIndex = 0;
@@ -401,6 +402,7 @@ void clean(char* urclCode) {
 
     if (inToken) {
       if (isWhitespace(c)) {
+        // end of token
         // test if token is a string (&SX)
 
         size_t tokenLen = strlen(token);
@@ -412,6 +414,9 @@ void clean(char* urclCode) {
               printf("Failed to find string with key \"%s\"!\n", token);
               exit(-1);
             }
+            printf("String: %s", value);
+            // when converting string to DW I need to replace escape codes before passing to stringToAscii
+            printf("String as a DW: [%s]\n", stringToAscii(value));
             temp = replaceString(workingCopy, value, tokenStart, tokenEnd);
             free(workingCopy);
             workingCopy = temp;

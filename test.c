@@ -1,19 +1,24 @@
 #include <stdio.h>
 #include <stddef.h>
-#include "lib/stringutils.h"
+#include "lib/stack.h"
 
 int main() {
-  char* base = "Hello, World!";
-  char* replacement = "scape";
-  char* new = replaceString(base, replacement, 4UL, 6UL);
+  printf("Creating new stack\n");
+  struct charStack stack = newStack();
 
-  printf("replaced section in base string \"%s\", got \"%s\"\n", base, new);
+  printf("Inputs: '1', '2', '3'\n");
+  stackPush('1', &stack);
+  stackPush('2', &stack);
+  stackPush('3', &stack);
 
-  new = replaceString(base, "\n", 7UL, 11UL);
-  printf("replaced section in base string \"%s\", got \"%s\"\n", base, new);
-
-  new = insertString(base, " there", 5UL);
-  printf("inserted section in base string \"%s\", got \"%s\"\n", base, new);
+  printf("Outputs: ");
+  char c;
+  stackPop(&c, &stack);
+  printf("%c ", c);
+  stackPop(&c, &stack);
+  printf("%c ", c);
+  stackPop(&c, &stack);
+  printf("%c\n", c);
 
   return 0;
 }
