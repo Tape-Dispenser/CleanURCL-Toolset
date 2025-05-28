@@ -34,4 +34,6 @@ char* stringToAscii(char* input);
 
 char* byteToAscii(unsigned char input);
 
+char* reverseString(char* input);
+
 #endif

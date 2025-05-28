@@ -31,11 +31,11 @@ int stackPush(char c, struct charStack* stack) {
 }
 
 int stackPop(char* c, struct charStack* stack) {
-  stack->pointer--;
-  if (stack->pointer < 0) {
+  if (stack->pointer == 0) {
     // check for stack underflow
     return -1;
   }
+  stack->pointer--;
   *c = stack->data[stack->pointer];
   
   if (stack->pointer < (stack->length / 2)) {

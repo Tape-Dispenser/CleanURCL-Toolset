@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "stack.h"
 
 char* cutString(char* input, size_t start, size_t end) {
   // cut out a section from input string between start and end indeces (start and end index are both cut out)
@@ -178,6 +179,29 @@ int isWhitespace(char input) {
   }
 }
 
+char* reverseString(char* input) {
+  char* output = malloc((strlen(input) + 1) * sizeof(char));
+  size_t stringLength = strlen(input);
+  size_t index = 0;
+  struct charStack stack = newStack();
+  while (index < stringLength) {
+    stackPush(input[index], &stack);
+    index++;
+  }
+  index = 0;
+  while (index < stringLength) {
+    stackPop(&output[index], &stack);
+    index++;
+  }
+  output[stringLength] = '\0';
+
+  free(stack.data);
+  stack.length = 0;
+  stack.pointer = 0;
+
+  return output;  
+}
+
 char* byteToAscii(unsigned char input) {
   // TODO: reverse the string
   char* output = malloc(2 * sizeof(char));
@@ -195,7 +219,9 @@ char* byteToAscii(unsigned char input) {
   }
   while (input > 0);
   output[++index] = '\0';
-  return output;
+  char* temp = reverseString(output);
+  free(output);
+  return temp;
 }
 
 char* stringToAscii(char* input) {
@@ -223,6 +249,7 @@ char* stringToAscii(char* input) {
     
   } while (c != '\0');
   // remove trailing whitespace
-  output[strlen(output)] = '\0';
+  output[strlen(output) - 1] = '\0';
   return output;
 }
+

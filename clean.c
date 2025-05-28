@@ -53,6 +53,37 @@ int lineNums = 0;
       // horizontal tab (0x09)
     // define "token" as any combination of sequential, 
     // non-whitespace character
+
+ char* stringToArray(char* input) {
+  char* output = malloc((strlen(input) + 1) * sizeof(char));
+  strcpy(output, input);
+  // convert string literal to an array of integers represented in ascii
+
+// step 1: drop quote marks and calculate string length
+  char* temp = cutString(output, 0, 0);
+  free(output);
+  output = temp;
+  temp = NULL;
+  size_t endIndex = strlen(output) - 1;
+  temp = cutString(output, endIndex, endIndex);
+  free(output);
+  output = temp;
+  temp = NULL;
+  // endIndex is the string length
+  printf("String length: %lu\n", endIndex);
+
+// step 2: replace escape sequences with actual characters
+
+
+// step 3: pass to stringToAscii()
+  temp = stringToAscii(output);
+  free(output);
+  output = temp;
+  temp = NULL;
+
+  return output;
+}
+
 char* stripWhitespace(char* input) {
   size_t index = 0;
   size_t whiteStart = 0;
@@ -115,7 +146,7 @@ void clean(char* urclCode) {
   char* workingCopy = malloc(sizeof(char) * (strlen(urclCode) + 1));
   strcpy(workingCopy, urclCode);
 
-  // step one:   replace all strings with a replacement key (ex. &S1, &S2, &S3, etc.), and remove all types of comments
+// step one:   replace all strings with a replacement key (ex. &S1, &S2, &S3, etc.), and remove all types of comments
   int inString = 0;
   int inMultiline = 0;
   int inComment = 0;
@@ -164,7 +195,6 @@ void clean(char* urclCode) {
       index = tokenStart + strlen(stringID);
       // change currentString to a new pointer
       // currentString's will be freed later
-      // i love introducing memory leaks intentionally
       temp = malloc(23 * sizeof(char));
       currentString = temp;
 
@@ -312,7 +342,7 @@ void clean(char* urclCode) {
   }
 
 
-  // step three: remove all extra whitespace
+// step two: remove all extra whitespace
     // whitespace is defined as:
       // space (0x20)
       // line feed (0x0A)
@@ -385,7 +415,7 @@ void clean(char* urclCode) {
   workingCopy = temp;
   temp = NULL;
 
-  // step four: put all characters and strings back
+// step three: put all characters and strings back
   // TODO: Replace string and character literals with decimal immediates
   
   int inToken = 0;
@@ -414,9 +444,12 @@ void clean(char* urclCode) {
               printf("Failed to find string with key \"%s\"!\n", token);
               exit(-1);
             }
-            printf("String: %s", value);
+            printf("String: %s\n", value);
             // when converting string to DW I need to replace escape codes before passing to stringToAscii
-            printf("String as a DW: [%s]\n", stringToAscii(value));
+            
+            temp = stringToArray(value);
+            printf("String as a DW: [%s]\n", temp);
+            puts("");
             temp = replaceString(workingCopy, value, tokenStart, tokenEnd);
             free(workingCopy);
             workingCopy = temp;
@@ -459,8 +492,7 @@ void clean(char* urclCode) {
     c = workingCopy[index];
   }
 
-
-  // step five: output code
+// step four: output code
   
   char* key;
   char* value;
@@ -477,7 +509,7 @@ void clean(char* urclCode) {
     index++;
   }
   stringMap.length = 0;
-  printf("%s\n", workingCopy);
+  //printf("%s\n", workingCopy);
   free(workingCopy);
 }
 
