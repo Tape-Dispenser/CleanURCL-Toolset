@@ -124,23 +124,3 @@ struct Line* tokenize(char* code) {
 
 struct Line* lines;
 
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-*/
-
-
-
-
-
-

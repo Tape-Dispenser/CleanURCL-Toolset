@@ -32,12 +32,13 @@
 // ############################  OPTIONS  ############################
 
 void help() {
-  puts("clean: clean [-h] [-o path] infile");
+  puts("clean: clean [-h] [-n] [-o path] infile");
   puts("  Clean up a urcl file by removing unnecessary comments and whitespace. Resulting code is output to stdout.");
   puts("");
   puts("  Options:");
-  puts("    -h:    print this menu.");
-  puts("    -n:    add original line numbers to the output code");
+  puts("    -h        :  print this menu.");
+  puts("    -n        :  add original line numbers to the output code");
+  puts("    -o <path> :  declare file name to output cleaned code to.");
 }
 
 int lineNums = 0;
