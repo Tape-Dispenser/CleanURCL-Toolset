@@ -28,6 +28,8 @@
 #include "lib/stringutils.h"
 #include "lib/map.h"
 
+#include "clean.h"
+
 
 char* toolsetVersion = "alpha 0.0.1";
 
@@ -178,5 +180,13 @@ int main(int argc, char **argv) {
   }
   // write null terminator
   code[index] = 0;
+  fclose(urclFile);
+
+  printf("input address:  %p\n", code);
+
+  char* temp;
+  temp = clean(code);
+
+  printf("output address: %p\n", temp);
   exit(0);
 }
