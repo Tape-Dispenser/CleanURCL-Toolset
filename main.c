@@ -31,7 +31,7 @@
 #include "clean.h"
 
 
-char* toolsetVersion = "alpha 0.0.1";
+char* toolsetVersion = "alpha 0.0.2";
 
 
 // #########################  HELP FUNCTION  #########################
