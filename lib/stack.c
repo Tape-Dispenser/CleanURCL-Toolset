@@ -20,7 +20,7 @@ struct charStack newStack() {
 int stackPush(char c, struct charStack* stack) {
   stack->data[stack->pointer] = c;
   stack->pointer++;
-  if (stack->pointer > stack->length) {
+  if (stack->pointer == stack->length) {
     stack->length *= 2;
     stack->data = realloc(stack->data, stack->length * sizeof(char));
   }

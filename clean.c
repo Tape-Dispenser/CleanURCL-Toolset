@@ -162,7 +162,7 @@ char* clean(char* inputCode) {
         continue;
       }
       inString = 0;
-      currentString[stringIndex] = 0;
+      currentString[stringIndex] = '\0';
       tokenEnd = index;
       // add string to map and replace with the string id (&S1, &S2, &S3, etc.)
       stringCount++;
@@ -181,7 +181,7 @@ char* clean(char* inputCode) {
       temp = NULL;
       index = tokenStart + strlen(stringID);
       // change currentString to a new pointer
-      // currentString's will be freed later
+      free(currentString);
       temp = malloc(23 * sizeof(char));
       currentString = temp;
 
@@ -210,6 +210,7 @@ char* clean(char* inputCode) {
           }
           replacement[jndex] = '\0';
           char* temp = replaceString(inputCode, replacement, tokenStart, tokenEnd);
+          free(replacement);
           free(inputCode);
           inputCode = temp;
           temp = NULL;
@@ -272,6 +273,7 @@ char* clean(char* inputCode) {
 
     index++;
   }
+  // cleanup
 
   // add line numbers
   index = 0;
@@ -324,7 +326,7 @@ char* clean(char* inputCode) {
     temp = NULL;
 
     // prevent bad indexing
-    index+=length+1;
+    index+=length;
     c = inputCode[index];
   }
 
@@ -431,12 +433,12 @@ char* clean(char* inputCode) {
               printf("Failed to find string with key \"%s\"!\n", token);
               exit(-1);
             }
-            //printf("String: %s\n", value);
+            printf("String: %s\n", value);
             // when converting string to DW I need to replace escape codes before passing to stringToAscii
             
             temp = stringToArray(value);
-            //printf("String as a DW: [%s]\n", temp);
-            //puts("");
+            printf("String as a DW: [%s]\n", temp);
+            puts("");
             temp = replaceString(inputCode, value, tokenStart, tokenEnd);
             free(inputCode);
             inputCode = temp;
@@ -478,6 +480,8 @@ char* clean(char* inputCode) {
     index++;
     c = inputCode[index];
   }
+  // cleanup
+  free(token);
 
 // step four: output code
   char* key;
