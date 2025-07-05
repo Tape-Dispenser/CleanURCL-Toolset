@@ -162,6 +162,7 @@ char* clean(char* inputCode) {
         continue;
       }
       inString = 0;
+      // add null terminator to string
       currentString[stringIndex] = '\0';
       tokenEnd = index;
       // add string to map and replace with the string id (&S1, &S2, &S3, etc.)
@@ -436,8 +437,14 @@ char* clean(char* inputCode) {
             printf("String: %s\n", value);
             // when converting string to DW I need to replace escape codes before passing to stringToAscii
             
+            free(temp);
             temp = stringToArray(value);
-            printf("String as a DW: [%s]\n", temp);
+            free(value);
+            value = temp;
+            temp = NULL;
+
+
+            printf("String as a DW: [%s]\n", value);
             puts("");
             temp = replaceString(inputCode, value, tokenStart, tokenEnd);
             free(inputCode);

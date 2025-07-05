@@ -78,9 +78,9 @@ char* outputPath;
 
 // ########################  OTHER FUNCTIONS  ########################
 
-int stoi(char* input) {
+u64 stoi(char* input) {
   // convert numerical string to int
-  int i = 0;
+  u64 i = 0;
   char c;
   int output = 0;
   while (i <= strlen(input)) {
@@ -188,5 +188,10 @@ int main(int argc, char **argv) {
   temp = clean(code);
 
   printf("output address: %p\n", temp);
+  puts("");
+  puts("");
+  printf("Output Code:\n%s\n", temp);
+
+  free(temp);
   exit(0);
 }

@@ -49,26 +49,7 @@ struct Line {
   char** tokens;
 };
 
-char* codeFromFile(char* path) {
-  FILE* urclFile = NULL;
-  urclFile = fopen(path, "r");
-  if (urclFile == NULL) {
-    printf("error no. %d while opening file \"%s\"\n", errno, path);
-  }
-  int c;
-  size_t index = 0;
-  char* code = malloc(1 * sizeof(char));
-  while ((c = fgetc(urclFile)) != EOF) {
-    code = realloc(code, (index + 2) * sizeof(char)); // plus one for the null terminator, plus two for index -> size conversion
-    code[index] = c;
-    index++; // index now points to the next free character
-  }
-  // write null terminator
-  code[index] = 0;
-
-  return code;
-}
-
+/*
 struct Line* tokenize(char* code) {
   int inToken = 0;
   int tokenIndex = 0;
@@ -121,6 +102,7 @@ struct Line* tokenize(char* code) {
   return 0;
 
 }
+*/
 
 struct Line* lines;
 
