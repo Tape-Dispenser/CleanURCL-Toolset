@@ -479,29 +479,33 @@ char* clean(char* inputCode) {
         if (tokenLen >= 3) {
           if (token[0] == '&' && token[1] == 'S') {
             char* value;
+            char* string;
             int returnCode = mapGet(&stringMap, token, &value);
+            string = malloc(strlen(value) + 1);
+            strcpy(string, value);
             if (returnCode != 0) {
               printf("Failed to find string with key \"%s\"!\n", token);
               exit(-1);
             }
-            printf("String: %s\n", value);
+            printf("String: %s\n", string);
             // when converting string to DW I need to replace escape codes before passing to stringToAscii
             
-            temp = stringToArray(value);
-            free(value);
-            value = temp;
+            temp = stringToArray(string);
+            free(string);
+            string = temp;
             temp = NULL;
 
 
-            printf("String as a DW: [%s]\n", value);
+            printf("String as a DW: [%s]\n", string);
             puts("");
-            temp = replaceString(inputCode, value, tokenStart, tokenEnd);
+            temp = replaceString(inputCode, string, tokenStart, tokenEnd);
             free(inputCode);
             inputCode = temp;
             temp = NULL;
-            index = tokenStart + strlen(value) - 1; // minus one so it still increments properly
+            index = tokenStart + strlen(string) - 1; // minus one so it still increments properly
             // this could be fixed with an early return
             // i dont wanna do an early return tho >:(
+            free(string);
           }
         }
 
@@ -542,12 +546,12 @@ char* clean(char* inputCode) {
 // step four: output code
   char* key;
   char* value;
-  //puts("Strings in stringMap:");
+  puts("Strings in stringMap:");
   index = 0;
   while (index < stringMap.length) {
     key = stringMap.keys[index];
     value = stringMap.values[index];
-    //printf("%s : %s\n", key, value);
+    printf("%s : %s\n", key, value);
     free(key);
     free(value);
     stringMap.keys[index] = NULL;
@@ -555,5 +559,6 @@ char* clean(char* inputCode) {
     index++;
   }
   stringMap.length = 0;
+  printf("Output Code: %s\n", inputCode);
   return inputCode;
 }

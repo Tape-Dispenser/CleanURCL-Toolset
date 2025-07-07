@@ -192,6 +192,6 @@ int main(int argc, char **argv) {
   puts("");
   printf("Output Code:\n%s\n", temp);
 
-  free(temp);
+  
   exit(0);
 }
