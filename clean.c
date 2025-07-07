@@ -63,7 +63,57 @@ char* stringToArray(char* input) {
   //printf("String length: %lu\n", endIndex);
 
 // step 2: replace escape sequences with actual characters
+  size_t stringIndex = 0;
+  char c;
+  char prev = 0;
+  
+  while (stringIndex < strlen(output)) {
+    c = output[stringIndex];
 
+    if (prev == '\\') {
+      unsigned char doReplace = 1;
+      char* replacement;
+      switch (c) {
+        case '"':
+          replacement = "\"";
+          break;
+        case '\\':
+          replacement = "\\";
+          break;
+        case 'b':
+          replacement = "\b";
+          break;
+        case 'f':
+          replacement = "\f";
+          break;
+        case 'n':
+          replacement = "\n";
+          break;
+        case 'r':
+          replacement = "\r";
+          break;
+        case 't':
+          replacement = "\t";
+          break;
+        case '\'':
+          replacement = "'";
+          break;
+        default:
+          doReplace = 0;
+          break;
+      }
+      if (doReplace) {
+        temp = replaceString(output, replacement, stringIndex - 1, stringIndex);
+        free(output);
+        output = temp;
+        temp = NULL;
+        stringIndex--;
+      }
+    }
+
+    stringIndex++;
+    prev = c;
+  }
 
 // step 3: pass to stringToAscii()
   temp = stringToAscii(output);
@@ -182,7 +232,7 @@ char* clean(char* inputCode) {
       temp = NULL;
       index = tokenStart + strlen(stringID);
       // change currentString to a new pointer
-      free(currentString);
+      // currentString needs to be freed on program exit, not here!!!
       temp = malloc(23 * sizeof(char));
       currentString = temp;
 
@@ -437,7 +487,6 @@ char* clean(char* inputCode) {
             printf("String: %s\n", value);
             // when converting string to DW I need to replace escape codes before passing to stringToAscii
             
-            free(temp);
             temp = stringToArray(value);
             free(value);
             value = temp;
