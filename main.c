@@ -182,16 +182,16 @@ int main(int argc, char **argv) {
   code[index] = 0;
   fclose(urclFile);
 
-  printf("input address:  %p\n", code);
+  // printf("input address:  %p\n", code);
 
   char* temp;
   temp = clean(code);
 
-  printf("output address: %p\n", temp);
-  puts("");
-  puts("");
+  // printf("output address: %p\n", temp);
+  // puts("");
+  // puts("");
   printf("Output Code:\n%s\n", temp);
 
-  
+
   exit(0);
 }

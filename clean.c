@@ -49,7 +49,12 @@ char* stringToArray(char* input) {
   strcpy(output, input);
   // convert string literal to an array of integers represented in ascii
 
+unsigned char isString = 1;
+
 // step 1: drop quote marks and calculate string length
+  if (output[0] == '\'') {
+    isString = 0;
+  }
   char* temp = cutString(output, 0, 0);
   free(output);
   output = temp;
@@ -100,6 +105,7 @@ char* stringToArray(char* input) {
           break;
         default:
           doReplace = 0;
+          printf("Warning: Unrecognized escape code \"\\%c\"\n", c);
           break;
       }
       if (doReplace) {
@@ -116,19 +122,26 @@ char* stringToArray(char* input) {
   }
 
 // step 3: pass to stringToAscii()
-  temp = stringToAscii(output);
-  free(output);
-  output = temp;
-  temp = NULL;
+  if (isString) {
+    temp = stringToAscii(output);
+    free(output);
+    output = temp;
 
-// step 4: add square brackets around the output
-  temp = insertString(output, "[", 0);
-  free(output);
-  output = temp;
-  temp = insertString(output, "]", strlen(output));
-  free(output);
-  output = temp;
-  temp = NULL;
+    // add square brackets around list of immediates
+    temp = insertString(output, "[", 0);
+    free(output);
+    output = temp;
+    temp = insertString(output, "]", strlen(output));
+    free(output);
+    output = temp;
+    temp = NULL;
+  }
+  else {
+    temp = byteToAscii(output[0]);
+    free(output);
+    output = temp;
+    temp = NULL;
+  }
 
   return output;
 }
@@ -496,7 +509,7 @@ char* clean(char* inputCode) {
               printf("Failed to find string with key \"%s\"!\n", token);
               exit(-1);
             }
-            printf("String: %s\n", string);
+            // printf("String: %s\n", string);
             // when converting string to DW I need to replace escape codes before passing to stringToAscii
             
             temp = stringToArray(string);
@@ -505,8 +518,8 @@ char* clean(char* inputCode) {
             temp = NULL;
 
 
-            printf("String as a DW: [%s]\n", string);
-            puts("");
+            // printf("String as a DW: %s\n", string);
+            // puts("");
             temp = replaceString(inputCode, string, tokenStart, tokenEnd);
             free(inputCode);
             inputCode = temp;
@@ -555,12 +568,12 @@ char* clean(char* inputCode) {
 // step four: output code
   char* key;
   char* value;
-  puts("Strings in stringMap:");
+  // puts("Strings in stringMap:");
   index = 0;
   while (index < stringMap.length) {
     key = stringMap.keys[index];
     value = stringMap.values[index];
-    printf("%s : %s\n", key, value);
+    // printf("%s : %s\n", key, value);
     free(key);
     free(value);
     stringMap.keys[index] = NULL;
@@ -568,6 +581,6 @@ char* clean(char* inputCode) {
     index++;
   }
   stringMap.length = 0;
-  printf("Output Code: %s\n", inputCode);
+  // printf("Output Code: %s\n", inputCode);
   return inputCode;
 }
