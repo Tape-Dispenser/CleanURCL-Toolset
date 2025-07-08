@@ -121,6 +121,15 @@ char* stringToArray(char* input) {
   output = temp;
   temp = NULL;
 
+// step 4: add square brackets around the output
+  temp = insertString(output, "[", 0);
+  free(output);
+  output = temp;
+  temp = insertString(output, "]", strlen(output));
+  free(output);
+  output = temp;
+  temp = NULL;
+
   return output;
 }
 
