@@ -27,12 +27,6 @@
 
 
 
-
-// ############################  OPTIONS  ############################
-
-int lineNums = 1;  // TODO: turn this off if main function stops after cleaning
-
-
 // #############################   CODE  #############################
 
 // step three: remove all extra whitespace between tokens
@@ -203,7 +197,7 @@ char* stripWhitespace(char* input) {
   return workingCopy;
 }
 
-char* clean(char* inputCode) {
+char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTerminate) {
 
 // step one:   replace all strings with a replacement key (ex. &S1, &S2, &S3, etc.), and remove all types of comments
   int inString = 0;
@@ -351,7 +345,7 @@ char* clean(char* inputCode) {
   // add line numbers
   index = 0;
   c = inputCode[index];
-  if (lineNums != 0) {
+  if (doLineNums) {
     size_t lineCount = 0;
     while (c != 0) {
       if (c != '\n') {
@@ -478,7 +472,6 @@ char* clean(char* inputCode) {
   temp = NULL;
 
 // step three: put all characters and strings back
-  // TODO: Replace string and character literals with decimal immediates
   
   int inToken = 0;
   int tokenIndex = 0;

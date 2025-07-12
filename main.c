@@ -42,7 +42,7 @@ void help() {
   puts("By Ada (Tape) adadispenser@gmail.com");
   puts("For reporting issues go to https://github.com/Tape-Dispenser/CleanURCL-Toolset/issues");
   puts("");
-  puts("urcltools : urcltools [-h] <input path> <-t path | -e 0-3> [-cukv] [-e path] [-p int] [-o path]");
+  puts("urcltools : urcltools [-h] <input path> <-t path | -e 0-3> [-cuknv] [-e path] [-p int] [-o path]");
   puts("  urcl translation toolset");
   puts("");
   puts("  Options:");
@@ -54,6 +54,7 @@ void help() {
   puts("    -u           :  only allow urcl-compliant code features (parser will throw an error if code contains CleanURCL features).");
   puts("    -o <path>    :  declare output file path. If no output is declared it will default to $pwd/out.s"); 
   puts("    -k           :  keep temporary files.");
+  puts("    -n           :  Append a null terminator to the end of every string immediate.");
   puts("    -v           :  verbose transpiling. Only works if translation file declares a comment style.");
 }
 
@@ -65,6 +66,7 @@ u8 doTranslations = 1;    // if this is zero then assemble to bitcode
 u8 baseOnly = 0;          // if this is one then only allow base URCL features
 u8 keepTempFiles = 0;     // if this is one then do not delete temporary files created in the compilation process
 u8 verboseTranspile = 0;  // if this is one then add comments to output assembly code (only if comments are defined in translation file)
+u8 nullStrings = 0;       // if this is one then strings will have a null byte added to the end of them
 
 
 // integers
@@ -107,7 +109,7 @@ int main(int argc, char **argv) {
   char* urclPath;
 
   // parse arguments
-  while ((option = getopt(argc, argv, ":hcukvt:e:p:o:")) != -1) {
+  while ((option = getopt(argc, argv, ":hcuknvt:e:p:o:")) != -1) {
     
     switch (option) {
       case 'h': {
@@ -124,6 +126,10 @@ int main(int argc, char **argv) {
       }
       case 'k': {
         keepTempFiles = 1;
+        break;
+      }
+      case 'n': {
+        nullStrings = 1;
         break;
       }
       case 'v': {
@@ -185,7 +191,7 @@ int main(int argc, char **argv) {
   // printf("input address:  %p\n", code);
 
   char* temp;
-  temp = clean(code);
+  temp = clean(code, !cleanOnly, nullStrings);
 
   // printf("output address: %p\n", temp);
   // puts("");
@@ -193,5 +199,5 @@ int main(int argc, char **argv) {
   printf("Output Code:\n%s\n", temp);
 
 
-  exit(0);
+  return 0;
 }

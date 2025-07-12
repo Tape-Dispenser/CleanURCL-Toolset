@@ -19,6 +19,6 @@
 #ifndef CLEAN_H
 #define CLEAN_H
 
-char* clean(char* input);
+char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTerminate);
 
 #endif
