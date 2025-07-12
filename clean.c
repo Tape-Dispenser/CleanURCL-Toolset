@@ -478,8 +478,13 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
   tokenStart = 0;
   tokenEnd = 0;
 
+  lineStart = 0;
+  lineEnd = 0;
+
   char* token = malloc(1 * sizeof(char));
   token[0] = '\0';
+  size_t tokensInLine = 0; 
+
 
   index = 0;
   c = inputCode[index];
@@ -488,6 +493,75 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
     if (inToken) {
       if (isWhitespace(c)) {
         // end of token
+
+        tokensInLine++;
+        // test if end of line
+        printf("Token: \"%s\"\n", token);
+        if (c == '\n') {
+          lineEnd = index;
+          
+          printf("end of line, line = \"%s\"\n", getSlice(inputCode, lineStart, lineEnd));
+          printf("Char at index: '%c' (%u)\n", c, c);
+          printf("tokens in line: %lu\n", tokensInLine);
+
+          
+          
+
+          if (tokensInLine == 0) {
+
+            // delete line here
+              puts("deleting line...\n");
+              puts("********************************************************************");
+              temp = cutString(inputCode, lineStart, lineEnd);
+              free(inputCode);
+              inputCode = temp;
+              temp = NULL;
+              index = lineStart;
+              lineEnd = lineStart;
+              c = inputCode[index];
+
+              // reset token
+              free(token);
+              tokenIndex = 0;
+              token = malloc(1 * sizeof(char));
+              token[tokenIndex] = '\0';
+              inToken = 0;
+
+              tokensInLine = 0;
+              continue;
+          
+          }
+          else if (tokensInLine == 1 && strlen(token) >= 3) {
+            if (token[0] == '&' && token[1] == 'L') {
+              
+              // delete line here
+              puts("deleting line...\n");
+              puts("********************************************************************");
+              temp = cutString(inputCode, lineStart, lineEnd);
+              free(inputCode);
+              inputCode = temp;
+              temp = NULL;
+              index = lineStart;
+              lineEnd = lineStart;
+              c = inputCode[index];
+
+              // reset token
+              free(token);
+              tokenIndex = 0;
+              token = malloc(1 * sizeof(char));
+              token[tokenIndex] = '\0';
+              inToken = 0;
+
+              tokensInLine = 0;
+              continue;
+            }
+          }
+          
+          tokensInLine = 0;
+          lineStart = index + 1;
+          puts("********************************************************************");
+        }
+        
         // test if token is a string (&SX)
 
         size_t tokenLen = strlen(token);
@@ -548,6 +622,73 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
         tokenIndex++;
         tokenStart = index;
         tokenEnd = index;
+      }
+      else {
+        if (c == '\n') {
+          lineEnd = index;
+          
+          printf("end of line, line = \"%s\"\n", getSlice(inputCode, lineStart, lineEnd));
+          printf("Char at index: '%c' (%u)\n", c, c);
+          printf("tokens in line: %lu\n", tokensInLine);
+          
+
+          
+          
+
+          if (tokensInLine == 0) {
+
+            // delete line here
+              puts("deleting line...\n");
+              puts("********************************************************************");
+              temp = cutString(inputCode, lineStart, lineEnd);
+              free(inputCode);
+              inputCode = temp;
+              temp = NULL;
+              index = lineStart;
+              lineEnd = lineStart;
+              c = inputCode[index];
+
+              // reset token
+              free(token);
+              tokenIndex = 0;
+              token = malloc(1 * sizeof(char));
+              token[tokenIndex] = '\0';
+              inToken = 0;
+
+              tokensInLine = 0;
+              continue;
+          
+          }
+          else if (tokensInLine == 1 && strlen(token) >= 3) {
+            if (token[0] == '&' && token[1] == 'L') {
+              
+              // delete line here
+              puts("deleting line...\n");
+              puts("********************************************************************");
+              temp = cutString(inputCode, lineStart, lineEnd);
+              free(inputCode);
+              inputCode = temp;
+              temp = NULL;
+              index = lineStart;
+              lineEnd = lineStart;
+              c = inputCode[index];
+
+              // reset token
+              free(token);
+              tokenIndex = 0;
+              token = malloc(1 * sizeof(char));
+              token[tokenIndex] = '\0';
+              inToken = 0;
+
+              tokensInLine = 0;
+              continue;
+            }
+          }
+          
+          tokensInLine = 0;
+          lineStart = index + 1;
+          puts("********************************************************************");
+        }
       }
     }
     

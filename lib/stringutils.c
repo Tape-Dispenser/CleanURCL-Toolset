@@ -253,3 +253,35 @@ char* stringToAscii(char* input) {
   return output;
 }
 
+char* getSlice(char* base, size_t startIndex, size_t endIndex) {
+  // sanity check inputs
+  size_t baseLength = strlen(base);
+  if (startIndex >= baseLength || endIndex >= baseLength) {
+    return NULL;
+  }
+  if (startIndex > endIndex) {
+    return NULL;
+  }
+
+  size_t index = 0;
+  char c = base[index];
+  char* output = malloc(1 * sizeof(char));
+  size_t outputIndex = 0;
+  output[0] = '\0';
+  while (c != 0) {
+    if (index >= startIndex) {
+      output = realloc(output, outputIndex + 2); // +1 for new char, +1 for null terminator
+      output[outputIndex] = c;
+      output[outputIndex + 1] = '\0';
+      outputIndex++;
+    }
+    if (index == endIndex) {
+      return output;
+    }
+
+    index++;
+    c = base[index];
+  }
+  return NULL;
+}
+

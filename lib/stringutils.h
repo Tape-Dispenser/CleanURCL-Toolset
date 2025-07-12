@@ -36,4 +36,6 @@ char* byteToAscii(unsigned char input);
 
 char* reverseString(char* input);
 
+char* getSlice(char* base, size_t startIndex, size_t endIndex);
+
 #endif
