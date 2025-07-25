@@ -61,13 +61,13 @@ char* stringToArray(char* input) {
 
     if (prev == '\\') {
       char* replacement;
-      char input[3];
-      input[0] = '\\';
-      input[1] = c;
-      input[2] = '\0';
+      char escapeCode[3];
+      escapeCode[0] = '\\';
+      escapeCode[1] = c;
+      escapeCode[2] = '\0';
 
-      if (replaceEscapeCode(&replacement, input) == 0) {
-        printf("replacing escape code \"%s\"\n", input);
+      if (replaceEscapeCode(&replacement, escapeCode) == 0) {
+        printf("replacing escape code \"%s\"\n", escapeCode);
         temp = replaceString(output, replacement, stringIndex - 1, stringIndex);
         free(output);
         output = temp;
