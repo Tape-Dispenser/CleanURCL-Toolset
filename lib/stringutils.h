@@ -38,4 +38,6 @@ char* reverseString(char* input);
 
 char* getSlice(char* base, size_t startIndex, size_t endIndex);
 
+__int8_t replaceEscapeCode(char** output, char* input);
+
 #endif

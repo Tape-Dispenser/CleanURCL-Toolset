@@ -285,3 +285,83 @@ char* getSlice(char* base, size_t startIndex, size_t endIndex) {
   return NULL;
 }
 
+__int8_t replaceEscapeCode(char** output, char* input) {
+  // output is a pointer to a single character,
+  // input must be the entire escape code,
+  // ex. "\n"
+  // NOT "n"
+
+
+  /* supported escape codes:
+  *  \" : "               (0x22)
+  *  \\ : \               (0x5C)
+  *  \b : backspace       (0x08)
+  *  \f : form feed       (0x0C)
+  *  \n : new line        (0x0A)
+  *  \r : carriage return (0x0D)
+  *  \t : horizontal tab  (0x09)
+  *  \v : vertical tab    (0x0B)
+  *  \' : '               (0x27)
+  *  \/ : /               (0x2F)
+  *  \0 : null            (0x00)
+  *  
+  */
+
+  *output = 0;
+
+  // input sanity checks
+  if (strlen(input) != 2) {
+    printf("Warning: Error while converting escape code \"%s\": invalid escape code length.\n", input);
+    return -1;
+  }
+  if (input[0] != '\\') {
+    printf("Warning: escape code must start with '\\'\n");
+    return -1;
+  }
+
+  switch (input[1]) {
+    case '\\':
+      *output = "\\";
+      return 0;
+    case '/':
+      *output = "/";
+      return 0;
+    case '\"':
+      *output = "\"";
+      return 0;
+    case '\'':
+      *output = "'";
+      return 0;
+    /*
+      for null escape code, length encoded strings are needed
+      case '0':
+      *output = "\0";
+      return 0;
+    */
+    case 'b':
+      *output = "\b";
+      return 0;
+    case 'f':
+      *output = "\f";
+      return 0;
+    case 'n':
+      *output = "\n";
+      return 0;
+    case 'r':
+      *output = "\r";
+      return 0;
+    case 't':
+      *output = "\t";
+      return 0;
+    case 'v':
+      *output = "\v";
+      return 0;
+    default:
+      printf("Warning: Unrecognized escape code \"%s\"\n", input);
+      return -1;
+  }
+
+
+
+}
+

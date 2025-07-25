@@ -28,22 +28,12 @@
 
 
 // #############################   CODE  #############################
-
-// step three: remove all extra whitespace between tokens
-    // whitespace is defined as:
-      // space (0x20)
-      // line feed (0x0A)
-      // carriage return (0x0D)
-      // horizontal tab (0x09)
-    // define "token" as any combination of sequential, 
-    // non-whitespace character
-
 char* stringToArray(char* input) {
   char* output = malloc((strlen(input) + 1) * sizeof(char));
   strcpy(output, input);
   // convert string literal to an array of integers represented in ascii
 
-unsigned char isString = 1;
+  unsigned char isString = 1;
 
 // step 1: drop quote marks and calculate string length
   if (output[0] == '\'') {
@@ -70,39 +60,14 @@ unsigned char isString = 1;
     c = output[stringIndex];
 
     if (prev == '\\') {
-      unsigned char doReplace = 1;
       char* replacement;
-      switch (c) {
-        case '"':
-          replacement = "\"";
-          break;
-        case '\\':
-          replacement = "\\";
-          break;
-        case 'b':
-          replacement = "\b";
-          break;
-        case 'f':
-          replacement = "\f";
-          break;
-        case 'n':
-          replacement = "\n";
-          break;
-        case 'r':
-          replacement = "\r";
-          break;
-        case 't':
-          replacement = "\t";
-          break;
-        case '\'':
-          replacement = "'";
-          break;
-        default:
-          doReplace = 0;
-          printf("Warning: Unrecognized escape code \"\\%c\"\n", c);
-          break;
-      }
-      if (doReplace) {
+      char input[3];
+      input[0] = '\\';
+      input[1] = c;
+      input[2] = '\0';
+
+      if (replaceEscapeCode(&replacement, input) == 0) {
+        printf("replacing escape code \"%s\"\n", input);
         temp = replaceString(output, replacement, stringIndex - 1, stringIndex);
         free(output);
         output = temp;
@@ -110,10 +75,9 @@ unsigned char isString = 1;
         stringIndex--;
       }
     }
-
     stringIndex++;
     prev = c;
-  }
+  } 
 
 // step 3: pass to stringToAscii()
   if (isString) {
@@ -141,6 +105,9 @@ unsigned char isString = 1;
 }
 
 char* stripWhitespace(char* input) {
+  // remove all excess whitespace from a line of urcl code
+  // ex. "   ADD      R1 r2            R3   " -> "ADD R1 r2 R3"
+
   size_t index = 0;
   size_t whiteStart = 0;
   size_t whiteEnd = 0;

@@ -23,8 +23,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include <datatypes.h>
-
 #include "lib/stringutils.h"
 #include "lib/map.h"
 
@@ -61,17 +59,17 @@ void help() {
 // #########################  OPTIONS SETUP  #########################
 
 // booleans
-u8 cleanOnly = 0;         // if this is one then stop after cleaning code
-u8 doTranslations = 1;    // if this is zero then assemble to bitcode
-u8 baseOnly = 0;          // if this is one then only allow base URCL features
-u8 keepTempFiles = 0;     // if this is one then do not delete temporary files created in the compilation process
-u8 verboseTranspile = 0;  // if this is one then add comments to output assembly code (only if comments are defined in translation file)
-u8 nullStrings = 0;       // if this is one then strings will have a null byte added to the end of them
+__uint8_t cleanOnly = 0;         // if this is one then stop after cleaning code
+__uint8_t doTranslations = 1;    // if this is zero then assemble to bitcode
+__uint8_t baseOnly = 0;          // if this is one then only allow base URCL features
+__uint8_t keepTempFiles = 0;     // if this is one then do not delete temporary files created in the compilation process
+__uint8_t verboseTranspile = 0;  // if this is one then add comments to output assembly code (only if comments are defined in translation file)
+__uint8_t nullStrings = 0;       // if this is one then strings will have a null byte added to the end of them
 
 
 // integers
-u8 complexityLevel = 3;     // complex = 3, basic = 2, core = 1, corer = 0
-u8 optimizationPasses = 0;  // once optimizer is added change this to 20
+__uint8_t complexityLevel = 3;     // complex = 3, basic = 2, core = 1, corer = 0
+__uint8_t optimizationPasses = 0;  // once optimizer is added change this to 20
 
 // strings
 char* translationPath;
@@ -80,11 +78,11 @@ char* outputPath;
 
 // ########################  OTHER FUNCTIONS  ########################
 
-u64 stoi(char* input) {
+__uint64_t stoi(char* input) {
   // convert numerical string to int
-  u64 i = 0;
+  __uint64_t i = 0;
   char c;
-  int output = 0;
+  __uint64_t output = 0;
   while (i <= strlen(input)) {
     c = input[i];
     if (c == 0) {
@@ -138,11 +136,11 @@ int main(int argc, char **argv) {
       }
       case 'e': {
         doTranslations = 0;
-        complexityLevel = (u8) stoi(optarg);
+        complexityLevel = (__uint8_t) stoi(optarg);
         break;
       }
       case 'p': {
-        optimizationPasses = (u8) stoi(optarg);
+        optimizationPasses = (__uint8_t) stoi(optarg);
         break;
       }
       case 't': {
