@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stddef.h>
 #include <string.h>
@@ -10,9 +11,11 @@ void test(char** testString) {
 }
 
 int main() {
-  char* string = "Hi!";
+  char* constant = "hello, faggots!";
+  char* string = malloc(sizeof(char) * 16);
+  strcpy(string, constant);
   printf("%s\n", string);
-  test(&string);
+  cutStringInPlace(&string, 3, 7);
   printf("%s\n", string);
   return 0;
 }

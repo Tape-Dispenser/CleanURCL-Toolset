@@ -39,15 +39,9 @@ char* stringToArray(char* input) {
   if (output[0] == '\'') {
     isString = 0;
   }
-  char* temp = cutString(output, 0, 0);
-  free(output);
-  output = temp;
-  temp = NULL;
+  cutStringInPlace(&output, 0, 0);
   size_t endIndex = strlen(output) - 1;
-  temp = cutString(output, endIndex, endIndex);
-  free(output);
-  output = temp;
-  temp = NULL;
+  cutStringInPlace(&output, endIndex, endIndex);
   // endIndex is the string length
   //printf("String length: %lu\n", endIndex);
 
@@ -68,10 +62,7 @@ char* stringToArray(char* input) {
 
       if (replaceEscapeCode(&replacement, escapeCode) == 0) {
         printf("replacing escape code \"%s\"\n", escapeCode);
-        temp = replaceString(output, replacement, stringIndex - 1, stringIndex);
-        free(output);
-        output = temp;
-        temp = NULL;
+        replaceStringInPlace(&output, replacement, stringIndex - 1, stringIndex);
         stringIndex--;
       }
     }
@@ -81,39 +72,28 @@ char* stringToArray(char* input) {
 
 // step 3: pass to stringToAscii()
   if (isString) {
-    temp = stringToAscii(output);
-    free(output);
-    output = temp;
-
+    stringToIntStringInPlace(&output);
     // add square brackets around list of immediates
-    temp = insertString(output, "[", 0);
-    free(output);
-    output = temp;
-    temp = insertString(output, "]", strlen(output));
-    free(output);
-    output = temp;
-    temp = NULL;
+    insertStringInPlace(&output, "[", 0);
+    insertStringInPlace(&output, "]", strlen(output));
   }
   else {
-    temp = byteToAscii(output[0]);
+    char* temp = byteToAscii(output[0]);
     free(output);
     output = temp;
     temp = NULL;
   }
-
   return output;
 }
 
 char* stripWhitespace(char* input) {
   // remove all excess whitespace from a line of urcl code
   // ex. "   ADD      R1 r2            R3   " -> "ADD R1 r2 R3"
-
   size_t index = 0;
   size_t whiteStart = 0;
   size_t whiteEnd = 0;
   int hasToken = 0;
   int inWhitespace = 0;
-  char* temp;
 
   char* workingCopy;
   workingCopy = malloc((strlen(input) + 1) * sizeof(char));
@@ -130,17 +110,11 @@ char* stripWhitespace(char* input) {
       }
       inWhitespace = 0;
       if (hasToken) {
-        temp = replaceString(workingCopy, " ", whiteStart, whiteEnd);
-        free(workingCopy);
-        workingCopy = temp;
-        temp = NULL;
+        replaceStringInPlace(&workingCopy, " ", whiteStart, whiteEnd);
         index = whiteStart + 1;
       }
       else { 
-        temp = cutString(workingCopy, whiteStart, whiteEnd);
-        free(workingCopy);
-        workingCopy = temp;
-        temp = NULL;
+        cutStringInPlace(&workingCopy, whiteStart, whiteEnd);
         index = whiteStart;
       }
       c = workingCopy[index];
@@ -156,16 +130,13 @@ char* stripWhitespace(char* input) {
         hasToken = 1;
       }
     }
-    
     index++;
     c = workingCopy[index];
   }
-
   return workingCopy;
 }
 
-char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTerminate) {
-
+char* tokenize(char* inputCode, unsigned char doLineNums, unsigned char nullTerminate) {
 // step one:   replace all strings with a replacement key (ex. &S1, &S2, &S3, etc.), and remove all types of comments
   int inString = 0;
   int inMultiline = 0;
@@ -209,17 +180,14 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
       }
       
       // replace string in inputCode with string identifier
-      char* temp = replaceString(inputCode, stringID, tokenStart, tokenEnd);      
-      free(inputCode);
-      inputCode = temp;
-      temp = NULL;
+      replaceStringInPlace(&inputCode, stringID, tokenStart, tokenEnd);
       index = tokenStart + strlen(stringID);
       // change currentString to a new pointer
       // currentString needs to be freed on program exit, not here!!!
-      temp = malloc(23 * sizeof(char));
+      char* temp = malloc(23 * sizeof(char));
       currentString = temp;
-
-    } else if (inMultiline == 1) {
+    } 
+    else if (inMultiline == 1) {
       char prev = inputCode[index - 1];
       if (c == '/' && prev == '*') {
         inMultiline = 0;
@@ -236,24 +204,18 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
         }
         if (newLines >= 1) {
           char* replacement = malloc((newLines + 1) * sizeof(char));
-          size_t jndex = 0;
+          size_t replacementIndex = 0;
           while (newLines > 0) {
-            replacement[jndex] = '\n';
-            jndex++;
+            replacement[replacementIndex] = '\n';
+            replacementIndex++;
             newLines--;
           }
-          replacement[jndex] = '\0';
-          char* temp = replaceString(inputCode, replacement, tokenStart, tokenEnd);
+          replacement[replacementIndex] = '\0';
+          replaceStringInPlace(&inputCode, replacement, tokenStart, tokenEnd);
           free(replacement);
-          free(inputCode);
-          inputCode = temp;
-          temp = NULL;
           index = tokenStart;
         } else {
-          char* temp = cutString(inputCode, tokenStart, tokenEnd);
-          free(inputCode);
-          inputCode = temp;
-          temp = NULL;
+          cutStringInPlace(&inputCode, tokenStart, tokenEnd);
           index = tokenStart;
         }
         index = tokenStart;
@@ -264,10 +226,7 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
         inComment = 0;
         tokenEnd = index - 1;  // -1 in order to not remove newlines before adding line markers
         // delete comment
-        char* temp = replaceString(inputCode, " ", tokenStart, tokenEnd);
-        free(inputCode);
-        inputCode = temp;
-        temp = NULL;
+        replaceStringInPlace(&inputCode, " ", tokenStart, tokenEnd);
         index = tokenStart;
       }
     } else {
@@ -307,9 +266,8 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
 
     index++;
   }
-  // cleanup
 
-  // add line numbers
+  // Step 2:  add line numbers
   index = 0;
   c = inputCode[index];
   if (doLineNums) {
@@ -330,15 +288,10 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
       // allocate memory for sprintf
       char* lineMarker = malloc((length + 1) * sizeof(char));
       sprintf(lineMarker, " &L%lu", lineCount);
-      char* temp = insertString(inputCode, lineMarker, index);
+      insertStringInPlace(&inputCode, lineMarker, index);
 
-      // Prevent memory leaks
-      free(inputCode);
+      // Prevent memory leaks and bad indexing
       free(lineMarker);
-      inputCode = temp;
-      temp = NULL;
-
-      // prevent bad indexing
       index+=length+1;
       c = inputCode[index];
     }
@@ -351,21 +304,17 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
     // allocate memory for sprintf
     char* lineMarker = malloc((length + 1) * sizeof(char));
     sprintf(lineMarker, " &L%lu", lineCount);
-    char* temp = insertString(inputCode, lineMarker, index);
+    insertStringInPlace(&inputCode, lineMarker, index);
 
-    // Prevent memory leaks
-    free(inputCode);
+    // Prevent memory leaks and bad indexing
     free(lineMarker);
-    inputCode = temp;
-    temp = NULL;
-
-    // prevent bad indexing
     index+=length;
     c = inputCode[index];
   }
 
+  
 
-// step two: remove all extra whitespace
+// step three: remove all extra whitespace
     // whitespace is defined as:
       // space (0x20)
       // line feed (0x0A)
@@ -399,10 +348,7 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
       line[lineLen + 1] = '\0';
 
       // put cleaned line back into code
-      temp = replaceString(inputCode, line, lineStart, lineEnd);
-      free(inputCode);
-      inputCode = temp;
-      temp = NULL;
+      replaceStringInPlace(&inputCode, line, lineStart, lineEnd);
 
       // reset variables for next line
       index = lineStart + lineLen + 1;
@@ -433,12 +379,9 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
   line[lineLen] = '\n';
   line[lineLen + 1] = '\0';
 
-  temp = replaceString(inputCode, line, lineStart, lineEnd);
-  free(inputCode);
-  inputCode = temp;
-  temp = NULL;
+  replaceStringInPlace(&inputCode, line, lineStart, lineEnd);
 
-// step three: put all characters and strings back
+// step 4: put all characters and strings back
   
   int inToken = 0;
   int tokenIndex = 0;
@@ -460,7 +403,6 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
     if (inToken) {
       if (isWhitespace(c)) {
         // end of token
-
         tokensInLine++;
         // test if end of line
         printf("Token: \"%s\"\n", token);
@@ -470,9 +412,6 @@ char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTermina
           printf("end of line, line = \"%s\"\n", getSlice(inputCode, lineStart, lineEnd));
           printf("Char at index: '%c' (%u)\n", c, c);
           printf("tokens in line: %lu\n", tokensInLine);
-
-          
-          
 
           if (tokensInLine == 0) {
 

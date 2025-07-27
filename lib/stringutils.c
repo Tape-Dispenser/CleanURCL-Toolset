@@ -55,6 +55,13 @@ char* cutString(char* input, size_t start, size_t end) {
   return outputString;
 }
 
+void cutStringInPlace(char** base, size_t start, size_t end) {
+  char* temp = cutString(*base, start, end);
+  char* deleteThis = *base;
+  *base = temp;
+  free(deleteThis);
+}
+
 char* replaceString(char* base, char* replacement, size_t start, size_t end) {
   // replace a section in base string with replacement string, resizing base as needed
 
@@ -105,6 +112,13 @@ char* replaceString(char* base, char* replacement, size_t start, size_t end) {
   return outputString;
 }
 
+void replaceStringInPlace(char** base, char* replacement, size_t start, size_t end) {
+  char* temp = replaceString(*base, replacement, start, end);
+  char* deleteThis = *base;
+  *base = temp;
+  free(deleteThis);
+}
+
 char* insertString(char* base, char* insert, size_t insertIndex) {
   // insert string into base string starting at index
   // inserting is very similar to replacing, you just have a replacement selection of zero length (start == end)
@@ -151,6 +165,13 @@ char* insertString(char* base, char* insert, size_t insertIndex) {
   // write null terminator
   outputString[outputIndex] = 0;
   return outputString;
+}
+
+void insertStringInPlace(char** base, char* insert, size_t index) {
+  char* temp = insertString(*base, insert, index);
+  char* deleteThis = *base;
+  *base = temp;
+  free(deleteThis);
 }
 
 void printUntil(char* string, size_t stopIndex) {
@@ -224,7 +245,7 @@ char* byteToAscii(unsigned char input) {
   return temp;
 }
 
-char* stringToAscii(char* input) {
+char* stringToIntString(char* input) {
   // convert string to space-seperated integer strings ("hello!" -> "104 101 108 108 111 33 0")
   size_t index = 0;
   size_t outputIndex = 0;
@@ -251,6 +272,14 @@ char* stringToAscii(char* input) {
   // remove trailing whitespace
   output[strlen(output) - 1] = '\0';
   return output;
+}
+
+void stringToIntStringInPlace(char** input) {
+  char* temp = stringToIntString(*input);
+  char* deleteThis = *input;
+  *input = temp;
+  free(deleteThis);
+  
 }
 
 char* getSlice(char* base, size_t startIndex, size_t endIndex) {

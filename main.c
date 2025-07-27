@@ -26,7 +26,7 @@
 #include "lib/stringutils.h"
 #include "lib/map.h"
 
-#include "clean.h"
+#include "tokenize.h"
 
 
 char* toolsetVersion = "alpha 0.0.2";
@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
   // printf("input address:  %p\n", code);
 
   char* temp;
-  temp = clean(code, !cleanOnly, nullStrings);
+  temp = tokenize(code, !cleanOnly, nullStrings);
 
   // printf("output address: %p\n", temp);
   // puts("");

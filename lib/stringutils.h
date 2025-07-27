@@ -22,15 +22,23 @@
 
 char* cutString(char* input, size_t start, size_t end);
 
+void cutStringInPlace(char** base, size_t start, size_t end);
+
 char* replaceString(char* base, char* replacement, size_t start, size_t end);
 
+void replaceStringInPlace(char** base, char* replacement, size_t start, size_t end);
+
 char* insertString(char* base, char* insert, size_t insertIndex);
+
+void insertStringInPlace(char** base, char* insert, size_t index);
 
 void printUntil(char* string, size_t stopIndex);
 
 int isWhitespace(char input);
 
-char* stringToAscii(char* input);
+char* stringToIntString(char* input);
+
+void stringToIntStringInPlace(char** input);
 
 char* byteToAscii(unsigned char input);
 

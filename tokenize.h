@@ -16,9 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef CLEAN_H
-#define CLEAN_H
+#ifndef TOKENIZE_H
+#define TOKENIZE_H
 
-char* clean(char* inputCode, unsigned char doLineNums, unsigned char nullTerminate);
+char* tokenize(char* inputCode, unsigned char doLineNums, unsigned char nullTerminate);
 
 #endif
