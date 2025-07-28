@@ -188,13 +188,7 @@ int main(int argc, char **argv) {
 
   // printf("input address:  %p\n", code);
 
-  char* temp;
-  temp = tokenize(code, !cleanOnly, nullStrings);
-
-  // printf("output address: %p\n", temp);
-  // puts("");
-  // puts("");
-  printf("Output Code:\n%s\n", temp);
+  struct TokenizedOutput tokenized = tokenize(code);
 
 
   return 0;

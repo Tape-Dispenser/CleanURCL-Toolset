@@ -1,9 +1,18 @@
 #ifndef LINEOBJECT_H
 #define LINEOBJECT_H
 
-struct Line {
+#include <bits/types.h>
 
+struct Token {
+  char type;
+  char* string;
 };
 
+struct Line {
+  __uint64_t linenumber;
+  char linetype;
+  struct Token* tokens;
+  __uint64_t tokenCount;
+};
 
 #endif

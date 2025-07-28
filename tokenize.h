@@ -19,6 +19,11 @@
 #ifndef TOKENIZE_H
 #define TOKENIZE_H
 
-char* tokenize(char* inputCode, unsigned char doLineNums, unsigned char nullTerminate);
+struct TokenizedOutput {
+  Map stringMap;
+  struct Line* tokenizedCode;
+};
+
+struct TokenizedOutput tokenize(char* inputCode);
 
 #endif

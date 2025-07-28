@@ -24,10 +24,17 @@
 #include <errno.h>
 #include "lib/stringutils.h"
 #include "lib/map.h"
+#include "lineobject.h"
 
 
 
 // #############################   CODE  #############################
+
+struct TokenizedOutput {
+  Map stringMap;
+  struct Line* tokenizedCode;
+};
+
 char* stringToArray(char* input) {
   char* output = malloc((strlen(input) + 1) * sizeof(char));
   strcpy(output, input);
@@ -136,7 +143,7 @@ char* stripWhitespace(char* input) {
   return workingCopy;
 }
 
-char* tokenize(char* inputCode, unsigned char doLineNums, unsigned char nullTerminate) {
+struct TokenizedOutput tokenize(char* inputCode) {
 // step one:   replace all strings with a replacement key (ex. &S1, &S2, &S3, etc.), and remove all types of comments
   int inString = 0;
   int inMultiline = 0;
@@ -270,33 +277,16 @@ char* tokenize(char* inputCode, unsigned char doLineNums, unsigned char nullTerm
   // Step 2:  add line numbers
   index = 0;
   c = inputCode[index];
-  if (doLineNums) {
-    size_t lineCount = 0;
-    while (c != 0) {
-      if (c != '\n') {
-        index++;
-        c = inputCode[index];
-        continue;
-      }
-      lineCount++;
-
-      // get length sprintf will return
-      FILE* devNull = fopen("/dev/null", "w");
-      size_t length = fprintf(devNull, " &L%lu", lineCount);
-      fclose(devNull);
-
-      // allocate memory for sprintf
-      char* lineMarker = malloc((length + 1) * sizeof(char));
-      sprintf(lineMarker, " &L%lu", lineCount);
-      insertStringInPlace(&inputCode, lineMarker, index);
-
-      // Prevent memory leaks and bad indexing
-      free(lineMarker);
-      index+=length+1;
+  size_t lineCount = 0;
+  while (c != 0) {
+    if (c != '\n') {
+      index++;
       c = inputCode[index];
+      continue;
     }
-    // Add another line marker at the end of the final line
     lineCount++;
+
+    // get length sprintf will return
     FILE* devNull = fopen("/dev/null", "w");
     size_t length = fprintf(devNull, " &L%lu", lineCount);
     fclose(devNull);
@@ -308,319 +298,126 @@ char* tokenize(char* inputCode, unsigned char doLineNums, unsigned char nullTerm
 
     // Prevent memory leaks and bad indexing
     free(lineMarker);
-    index+=length;
+    index+=length+1;
     c = inputCode[index];
   }
+  // Add another line marker at the end of the final line
+  lineCount++;
+  FILE* devNull = fopen("/dev/null", "w");
+  size_t length = fprintf(devNull, " &L%lu", lineCount);
+  fclose(devNull);
 
-  
+  // allocate memory for sprintf
+  char* lineMarker = malloc((length + 1) * sizeof(char));
+  sprintf(lineMarker, " &L%lu", lineCount);
+  insertStringInPlace(&inputCode, lineMarker, index);
 
-// step three: remove all extra whitespace
-    // whitespace is defined as:
-      // space (0x20)
-      // line feed (0x0A)
-      // carriage return (0x0D)
-      // horizontal tab (0x09)
-    // define "token" as any combination of sequential, non-whitespace characters
-  index = 0;
+  // Prevent memory leaks and bad indexing
+  free(lineMarker);
+  index+=length;
   c = inputCode[index];
-  char* line = malloc(1 * sizeof(char));
-  size_t lineIndex = 0;
-  char* temp;
-  size_t lineStart = 0;
-  size_t lineEnd = 0;
-
-  while (c != 0) {
-    if (c == '\n') {
-      // end of line reached
-      lineEnd = index;
-      line[lineIndex] = '\0';
-      //printf("Input Line: \"%s\"\n", line);
-      temp = stripWhitespace(line);
-      //printf("Output Line: \"%s\"\n", temp);
-      free(line);
-      line = temp;
-      temp = NULL;
-
-      // replace null at end of returned line with a newline
-      size_t lineLen = strlen(line);
-      line = realloc(line, (lineLen + 2) * sizeof(char));
-      line[lineLen] = '\n';
-      line[lineLen + 1] = '\0';
-
-      // put cleaned line back into code
-      replaceStringInPlace(&inputCode, line, lineStart, lineEnd);
-
-      // reset variables for next line
-      index = lineStart + lineLen + 1;
-      line = malloc(1 * sizeof(char));
-      lineIndex = 0;
-      lineStart = index;
-      c = inputCode[index];
-      continue;
-    }
   
-    line[lineIndex] = c;
-    line = realloc(line, (lineIndex + 2) * sizeof(char));
-    lineIndex++;
-    index++;
-    c = inputCode[index];
-    continue;
-  }
-  // process the last line in the code (it ends with \0 not \n)
-  lineEnd = index - 1;
-  line[lineIndex] = '\0';
-  temp = stripWhitespace(line);
-  free(line);
-  line = temp;
-  temp = NULL;
+  puts("start tokenization");
 
-  size_t lineLen = strlen(line);
-  line = realloc(line, (lineLen + 2) * sizeof(char));
-  line[lineLen] = '\n';
-  line[lineLen + 1] = '\0';
-
-  replaceStringInPlace(&inputCode, line, lineStart, lineEnd);
-
-// step 4: put all characters and strings back
-  
-  int inToken = 0;
-  int tokenIndex = 0;
+// step three: tokenize code
+  // prepare state
+  __uint8_t inToken = 0;
   tokenStart = 0;
   tokenEnd = 0;
-
-  lineStart = 0;
-  lineEnd = 0;
-
-  char* token = malloc(1 * sizeof(char));
-  token[0] = '\0';
-  size_t tokensInLine = 0; 
-
+  struct Token* tokenList = malloc(sizeof(struct Token));
+  size_t tokenIndex = 0;
 
   index = 0;
   c = inputCode[index];
-  while (c != '\0') {
-
+  size_t codeLength = strlen(inputCode);
+  while (index <= codeLength) {
     if (inToken) {
-      if (isWhitespace(c)) {
-        // end of token
-        tokensInLine++;
-        // test if end of line
+      if (isWhitespace(c) || c == '\0') {
+        char* token = getSlice(inputCode, tokenStart, tokenEnd);
         printf("Token: \"%s\"\n", token);
-        if (c == '\n') {
-          lineEnd = index;
-          
-          printf("end of line, line = \"%s\"\n", getSlice(inputCode, lineStart, lineEnd));
-          printf("Char at index: '%c' (%u)\n", c, c);
-          printf("tokens in line: %lu\n", tokensInLine);
-
-          if (tokensInLine == 0) {
-
-            // delete line here
-              puts("deleting line...\n");
-              puts("********************************************************************");
-              temp = cutString(inputCode, lineStart, lineEnd);
-              free(inputCode);
-              inputCode = temp;
-              temp = NULL;
-              index = lineStart;
-              lineEnd = lineStart;
-              c = inputCode[index];
-
-              // reset token
-              free(token);
-              tokenIndex = 0;
-              token = malloc(1 * sizeof(char));
-              token[tokenIndex] = '\0';
-              inToken = 0;
-
-              tokensInLine = 0;
-              continue;
-          
-          }
-          else if (tokensInLine == 1 && strlen(token) >= 3) {
-            if (token[0] == '&' && token[1] == 'L') {
-              
-              // delete line here
-              puts("deleting line...\n");
-              puts("********************************************************************");
-              temp = cutString(inputCode, lineStart, lineEnd);
-              free(inputCode);
-              inputCode = temp;
-              temp = NULL;
-              index = lineStart;
-              lineEnd = lineStart;
-              c = inputCode[index];
-
-              // reset token
-              free(token);
-              tokenIndex = 0;
-              token = malloc(1 * sizeof(char));
-              token[tokenIndex] = '\0';
-              inToken = 0;
-
-              tokensInLine = 0;
-              continue;
-            }
-          }
-          
-          tokensInLine = 0;
-          lineStart = index + 1;
-          puts("********************************************************************");
-        }
-        
-        // test if token is a string (&SX)
-
-        size_t tokenLen = strlen(token);
-        if (tokenLen >= 3) {
-          if (token[0] == '&' && token[1] == 'S') {
-            char* value;
-            char* string;
-            int returnCode = mapGet(&stringMap, token, &value);
-            string = malloc(strlen(value) + 1);
-            strcpy(string, value);
-            if (returnCode != 0) {
-              printf("Failed to find string with key \"%s\"!\n", token);
-              exit(-1);
-            }
-            // printf("String: %s\n", string);
-            // when converting string to DW I need to replace escape codes before passing to stringToAscii
-            
-            temp = stringToArray(string);
-            free(string);
-            string = temp;
-            temp = NULL;
-
-
-            // printf("String as a DW: %s\n", string);
-            // puts("");
-            temp = replaceString(inputCode, string, tokenStart, tokenEnd);
-            free(inputCode);
-            inputCode = temp;
-            temp = NULL;
-            index = tokenStart + strlen(string) - 1; // minus one so it still increments properly
-            // this could be fixed with an early return
-            // i dont wanna do an early return tho >:(
-            free(string);
-          }
-        }
-
-        free(token);
-        tokenIndex = 0;
-        token = malloc(1 * sizeof(char));
-        token[tokenIndex] = '\0';
+        struct Token obj;
+        obj.string = token;
+        tokenList[tokenIndex] = obj;
+        tokenIndex++;
+        tokenList = realloc(tokenList, (tokenIndex + 1) * sizeof(struct Token));
         inToken = 0;
-        
       }
       else {
-        token = realloc(token, (strlen(token) + 2) * sizeof(char));
-        token[tokenIndex] = c;
-        tokenIndex++;
-        token[tokenIndex] = '\0';
-        tokenEnd++;
+        tokenEnd = index;
       }
     }
     else {
-      if (!isWhitespace(c)) {
-        token = realloc(token, 2 * sizeof(char));
-        token[0] = c;
-        token[1] = '\0';
-        inToken = 1;
-        tokenIndex++;
+      if (!isWhitespace(c) && c != '\0') {
         tokenStart = index;
         tokenEnd = index;
-      }
-      else {
-        if (c == '\n') {
-          lineEnd = index;
-          
-          printf("end of line, line = \"%s\"\n", getSlice(inputCode, lineStart, lineEnd));
-          printf("Char at index: '%c' (%u)\n", c, c);
-          printf("tokens in line: %lu\n", tokensInLine);
-          
-
-          
-          
-
-          if (tokensInLine == 0) {
-
-            // delete line here
-              puts("deleting line...\n");
-              puts("********************************************************************");
-              temp = cutString(inputCode, lineStart, lineEnd);
-              free(inputCode);
-              inputCode = temp;
-              temp = NULL;
-              index = lineStart;
-              lineEnd = lineStart;
-              c = inputCode[index];
-
-              // reset token
-              free(token);
-              tokenIndex = 0;
-              token = malloc(1 * sizeof(char));
-              token[tokenIndex] = '\0';
-              inToken = 0;
-
-              tokensInLine = 0;
-              continue;
-          
-          }
-          else if (tokensInLine == 1 && strlen(token) >= 3) {
-            if (token[0] == '&' && token[1] == 'L') {
-              
-              // delete line here
-              puts("deleting line...\n");
-              puts("********************************************************************");
-              temp = cutString(inputCode, lineStart, lineEnd);
-              free(inputCode);
-              inputCode = temp;
-              temp = NULL;
-              index = lineStart;
-              lineEnd = lineStart;
-              c = inputCode[index];
-
-              // reset token
-              free(token);
-              tokenIndex = 0;
-              token = malloc(1 * sizeof(char));
-              token[tokenIndex] = '\0';
-              inToken = 0;
-
-              tokensInLine = 0;
-              continue;
-            }
-          }
-          
-          tokensInLine = 0;
-          lineStart = index + 1;
-          puts("********************************************************************");
-        }
+        inToken = 1;
       }
     }
-    
-    
     index++;
     c = inputCode[index];
   }
-  // cleanup
-  free(token);
+  puts("tokenization over");
 
-// step four: output code
-  char* key;
-  char* value;
-  // puts("Strings in stringMap:");
+  // step 4: put tokens into lines
+  struct Line* lines;
+  size_t linesIndex = 0;
+  lines = malloc(sizeof(struct Line));
+  
+  struct Line line;
+  size_t lineIndex = 0;
+  line.tokens = malloc(sizeof(struct Token));
+  line.tokenCount = 0;
+
   index = 0;
-  while (index < stringMap.length) {
-    key = stringMap.keys[index];
-    value = stringMap.values[index];
-    // printf("%s : %s\n", key, value);
-    free(key);
-    free(value);
-    stringMap.keys[index] = NULL;
-    stringMap.values[index] = NULL;
+  while (index < tokenIndex) {
+    struct Token token = tokenList[index];
+
+    // put token in line
+    line.tokens[lineIndex] = token;
+    line.tokenCount++;
+    lineIndex++;
+    puts("bad realloc 1?");
+    line.tokens = realloc(line.tokens, (lineIndex + 1) * sizeof(struct Token));
+    
+    if (token.string[0] == '&' && token.string[1] == 'L') {
+      // end of line
+      // add line to lines
+      lines[linesIndex] = line;
+      linesIndex++;
+      lines = realloc(lines, (linesIndex + 1) * sizeof(struct Line));
+      puts("bad realloc 2?");
+
+      // make a new line
+      line.tokens = NULL;
+      line.tokens = malloc(sizeof(struct Token));
+      line.tokenCount = 0;
+      lineIndex = 0;
+    }
     index++;
   }
-  stringMap.length = 0;
-  // printf("Output Code: %s\n", inputCode);
-  return inputCode;
+
+  puts("split tokens into lines");
+
+
+  // print lines
+  size_t i = 0;
+  size_t j = 0;
+  while (i < linesIndex) {
+    struct Line line = lines[i];
+    j = 0;
+    while (j < line.tokenCount) {
+      printf("%s ", line.tokens[j].string);
+      j++;
+    }
+    printf("\n");
+    i++;
+  }
+
+
+
+// step four: output code
+  struct TokenizedOutput output;
+  output.stringMap = stringMap;
+  output.tokenizedCode = lines;
+  return output;
 }
