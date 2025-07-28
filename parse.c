@@ -1,5 +1,5 @@
 /*
- * parse.c: parses URCL code into structs useable by the next step in a transpiler toolchain,
+ * parse.c: parses extra data from URCL code for the next step in a transpiler toolchain,
  *          along with doing error checking
  * Copyright (C) 2025, Ada (Tape), <adadispenser@gmail.com>
  *
@@ -32,22 +32,6 @@
   the first function could be removed if i rewrite clean to just return the output as a string,
   then call all the functions provided with a master file
 */
-
-
-struct Line {
-  int originalLineNum;
-  char type;
-  /*
-  valid line types:
-    'h': header
-    'm': macro
-    'l': label
-    'i': instruction
-    'd': directive
-  if a line object has a type other than these 5 valid types an error should be thrown
-  */
-  char** tokens;
-};
 
 /*
 struct Line* tokenize(char* code) {

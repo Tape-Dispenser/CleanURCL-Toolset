@@ -26,8 +26,6 @@
 #include "lib/map.h"
 #include "lineobject.h"
 
-
-
 // #############################   CODE  #############################
 
 struct TokenizedOutput {
@@ -302,7 +300,8 @@ struct TokenizedOutput tokenize(char* inputCode) {
     c = inputCode[index];
   }
   // Add another line marker at the end of the final line
-  lineCount++;
+  lineCount++;// step four: output code
+
   FILE* devNull = fopen("/dev/null", "w");
   size_t length = fprintf(devNull, " &L%lu", lineCount);
   fclose(devNull);
@@ -316,8 +315,6 @@ struct TokenizedOutput tokenize(char* inputCode) {
   free(lineMarker);
   index+=length;
   c = inputCode[index];
-  
-  puts("start tokenization");
 
 // step three: tokenize code
   // prepare state
@@ -334,7 +331,6 @@ struct TokenizedOutput tokenize(char* inputCode) {
     if (inToken) {
       if (isWhitespace(c) || c == '\0') {
         char* token = getSlice(inputCode, tokenStart, tokenEnd);
-        printf("Token: \"%s\"\n", token);
         struct Token obj;
         obj.string = token;
         tokenList[tokenIndex] = obj;
@@ -356,7 +352,6 @@ struct TokenizedOutput tokenize(char* inputCode) {
     index++;
     c = inputCode[index];
   }
-  puts("tokenization over");
 
   // step 4: put tokens into lines
   struct Line* lines;
@@ -376,7 +371,6 @@ struct TokenizedOutput tokenize(char* inputCode) {
     line.tokens[lineIndex] = token;
     line.tokenCount++;
     lineIndex++;
-    puts("bad realloc 1?");
     line.tokens = realloc(line.tokens, (lineIndex + 1) * sizeof(struct Token));
     
     if (token.string[0] == '&' && token.string[1] == 'L') {
@@ -385,7 +379,6 @@ struct TokenizedOutput tokenize(char* inputCode) {
       lines[linesIndex] = line;
       linesIndex++;
       lines = realloc(lines, (linesIndex + 1) * sizeof(struct Line));
-      puts("bad realloc 2?");
 
       // make a new line
       line.tokens = NULL;
@@ -396,26 +389,7 @@ struct TokenizedOutput tokenize(char* inputCode) {
     index++;
   }
 
-  puts("split tokens into lines");
-
-
-  // print lines
-  size_t i = 0;
-  size_t j = 0;
-  while (i < linesIndex) {
-    struct Line line = lines[i];
-    j = 0;
-    while (j < line.tokenCount) {
-      printf("%s ", line.tokens[j].string);
-      j++;
-    }
-    printf("\n");
-    i++;
-  }
-
-
-
-// step four: output code
+// step 5: output code
   struct TokenizedOutput output;
   output.stringMap = stringMap;
   output.tokenizedCode = lines;
