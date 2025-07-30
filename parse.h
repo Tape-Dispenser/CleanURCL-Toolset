@@ -20,23 +20,8 @@
 #ifndef PARSE_H
 #define PARSE_H
 
-struct Line {
-  int originalLineNum;
-  char type;
-  /*
-  valid line types:
-    'h': header
-    'm': macro
-    'l': label
-    'i': instruction
-    'd': directive
-  if a line object has a type other than these 5 valid types an error should be thrown
-  */
-  char** tokens;
-};
+#include "tokenize.h"
 
-char* codeFromFile(char* path);
-
-struct Line* tokenize(char* code);
+struct Line* parse(struct TokenizedOutput code);
 
 #endif

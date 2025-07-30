@@ -19,9 +19,12 @@
 #ifndef TOKENIZE_H
 #define TOKENIZE_H
 
+#include "lib/map.h"
+
 struct TokenizedOutput {
   Map stringMap;
   struct Line* tokenizedCode;
+  size_t lineCount;
 };
 
 struct TokenizedOutput tokenize(char* inputCode);

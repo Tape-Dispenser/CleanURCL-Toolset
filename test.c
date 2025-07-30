@@ -6,16 +6,9 @@
 #include "lib/stringutils.h"
 #include "lib/stack.h"
 
-void test(char** testString) {
-  *testString = "hello, world!";
-}
-
 int main() {
-  char* constant = "hello, faggots!";
-  char* string = malloc(sizeof(char) * 16);
-  strcpy(string, constant);
-  printf("%s\n", string);
-  cutStringInPlace(&string, 3, 7);
-  printf("%s\n", string);
+  char* hexValue = "1234567890abcdef1234567890abcdef";
+  __uint128_t integer = hexToInt(hexValue);
+  printf("%llx\n", integer);
   return 0;
 }

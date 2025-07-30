@@ -6,6 +6,7 @@
 struct Token {
   char type;
   char* string;
+  __int128_t value;
 };
 
 struct Line {

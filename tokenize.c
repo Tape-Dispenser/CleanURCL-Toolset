@@ -31,6 +31,7 @@
 struct TokenizedOutput {
   Map stringMap;
   struct Line* tokenizedCode;
+  size_t lineCount;
 };
 
 char* stringToArray(char* input) {
@@ -393,5 +394,6 @@ struct TokenizedOutput tokenize(char* inputCode) {
   struct TokenizedOutput output;
   output.stringMap = stringMap;
   output.tokenizedCode = lines;
+  output.lineCount = linesIndex;
   return output;
 }

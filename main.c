@@ -27,6 +27,7 @@
 #include "lib/map.h"
 
 #include "tokenize.h"
+#include "parse.h"
 
 
 char* toolsetVersion = "alpha 0.0.2";
@@ -189,7 +190,7 @@ int main(int argc, char **argv) {
   // printf("input address:  %p\n", code);
 
   struct TokenizedOutput tokenized = tokenize(code);
-
+  parse(tokenized);
 
   return 0;
 }

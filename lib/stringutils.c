@@ -389,8 +389,24 @@ __int8_t replaceEscapeCode(char** output, char* input) {
       printf("Warning: Unrecognized escape code \"%s\"\n", input);
       return -1;
   }
-
-
-
 }
+
+__int128_t hexToInt(char* hexInput) {
+    __int128_t output = 0;
+    __uint8_t nibbleIndex = 0;
+    while (nibbleIndex < strlen(hexInput)) {
+      char nibble = hexInput[strlen(hexInput) - nibbleIndex - 1];
+      if (nibble >= '0' && nibble <= '9') {
+        output += ((__int128_t)(nibble - '0')) << (4 * nibbleIndex);
+      }
+      if (nibble >= 'a' && nibble <= 'f') {
+        output += ((__int128_t)(nibble - 'a' + 10)) << (4 * nibbleIndex);
+      }
+      if (nibble >= 'A' && nibble <= 'F') {
+        output += ((__int128_t)(nibble - 'A' + 10)) << (4 * nibbleIndex);
+      }
+      nibbleIndex++;
+    }
+    return output;
+  }
 

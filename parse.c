@@ -23,70 +23,70 @@
 #include <getopt.h>
 #include <string.h>
 #include <errno.h>
+#include "tokenize.h"
+#include "lineobject.h"
+#include "lib/map.h"
 #include "lib/stringutils.h"
 
-/*
-  since parsing returns a struct and not a text file,
-  parsing will have no main function and instead be broken up into two functions,
-  one to read the text from a file input, and one to parse the string into the Line array.
-  the first function could be removed if i rewrite clean to just return the output as a string,
-  then call all the functions provided with a master file
-*/
+struct Line* parse(struct TokenizedOutput code) {
+  size_t lineIndex = 0;
+  size_t tokenIndex;
+  while (lineIndex < code.lineCount) {
+    struct Line line = code.tokenizedCode[lineIndex];
+    tokenIndex = 0;
+    while (tokenIndex < line.tokenCount) {
+      struct Token token = line.tokens[tokenIndex];
+      switch (token.string[0]) {
+        case 'R':
+        case 'r':
+        case '$':
+          token.type = 'r'; // Register
+          break;
+        case 'M':
+        case 'm':
+        case '#':
+          token.type = 'h'; // Heap
+          break;
+        case '.':
+          token.type = 'l'; // Label
+          break;
+        case '~':
+          token.type = 'e'; // rElative
+          break;
+        case '@':
+          token.type = 'm'; // Macro
+          break;
+        default:
+          if (token.string[0] >= '0' && token.string[0] <= '9') {
+            if (strlen(token.string) < 3) {
+              token.type = 'i'; // decimal immediate
+              break;
+            }
+            if (token.string[1] >= '0' && token.string[1] <= '9') {
+              token.type = 'i'; // decimal immedate
+              break;
+            }
+            if (token.string[1] == 'x' || token.string[1] == 'X') {
+              // hex immediate
+              char* hexValue = getSlice(token.string, 2, strlen(token.string) - 1);
+              free(token.string);
+              // convert hexValue to integer, put int into token.value then convert to string and put into token.string
+              
+            }
+            if (token.string[1] == 'b' || token.string[1] == 'B') {
+              // binary immediate
+              char* binValue = getSlice(token.string, 2, strlen(token.string) - 1);
+              free(token.string);
+              // convert binValue to integer, put int into token.value then convert to string and put into token.string
+            }
 
-/*
-struct Line* tokenize(char* code) {
-  int inToken = 0;
-  int tokenIndex = 0;
-  int tokenStart = 0;
-  int tokenEnd = 0;
-
-  char* token = malloc(1 * sizeof(char));
-  token[0] = '\0';
-
-  int index = 0;
-  char c = code[index];
-  while (c != '\0') {
-
-    if (inToken) {
-      if (isWhitespace(c)) {
-        // end of token
-        printf("token: \"%s\"\n", token);
-        free(token);
-        tokenIndex = 0;
-        token = malloc(1 * sizeof(char));
-        token[tokenIndex] = '\0';
-        inToken = 0;
-        
+            break;
+          }
       }
-      else {
-        token = realloc(token, (strlen(token) + 2) * sizeof(char));
-        token[tokenIndex] = c;
-        tokenIndex++;
-        token[tokenIndex] = '\0';
-        tokenEnd++;
-      }
+      tokenIndex++;
     }
-    else {
-      if (!isWhitespace(c)) {
-        token = realloc(token, 2 * sizeof(char));
-        token[0] = c;
-        token[1] = '\0';
-        inToken = 1;
-        tokenIndex++;
-        tokenStart = index;
-        tokenEnd = index;
-      }
-    }
-    
-    
-    index++;
-    c = code[index];
+    lineIndex++;
   }
-
-  return 0;
-
 }
-*/
 
-struct Line* lines;
 

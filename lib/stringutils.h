@@ -48,4 +48,6 @@ char* getSlice(char* base, size_t startIndex, size_t endIndex);
 
 __int8_t replaceEscapeCode(char** output, char* input);
 
+__int128_t hexToInt(char* hexInput);
+
 #endif
