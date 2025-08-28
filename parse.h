@@ -20,8 +20,8 @@
 #ifndef PARSE_H
 #define PARSE_H
 
-#include "tokenize.h"
+#include "codeobjects.h"
 
-struct Line* parse(struct TokenizedOutput code);
+struct Line* parse(struct Code* code);
 
 #endif

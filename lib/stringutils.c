@@ -392,21 +392,37 @@ __int8_t replaceEscapeCode(char** output, char* input) {
 }
 
 __int128_t hexToInt(char* hexInput) {
-    __int128_t output = 0;
-    __uint8_t nibbleIndex = 0;
-    while (nibbleIndex < strlen(hexInput)) {
-      char nibble = hexInput[strlen(hexInput) - nibbleIndex - 1];
-      if (nibble >= '0' && nibble <= '9') {
-        output += ((__int128_t)(nibble - '0')) << (4 * nibbleIndex);
-      }
-      if (nibble >= 'a' && nibble <= 'f') {
-        output += ((__int128_t)(nibble - 'a' + 10)) << (4 * nibbleIndex);
-      }
-      if (nibble >= 'A' && nibble <= 'F') {
-        output += ((__int128_t)(nibble - 'A' + 10)) << (4 * nibbleIndex);
-      }
-      nibbleIndex++;
+  __int128_t output = 0;
+  __uint8_t nibbleIndex = 0;
+  while (nibbleIndex < strlen(hexInput)) {
+    char nibble = hexInput[strlen(hexInput) - nibbleIndex - 1];
+    if (nibble >= '0' && nibble <= '9') {
+      output += ((__int128_t)(nibble - '0')) << (4 * nibbleIndex);
     }
-    return output;
+    if (nibble >= 'a' && nibble <= 'f') {
+      output += ((__int128_t)(nibble - 'a' + 10)) << (4 * nibbleIndex);
+    }
+    if (nibble >= 'A' && nibble <= 'F') {
+      output += ((__int128_t)(nibble - 'A' + 10)) << (4 * nibbleIndex);
+    }
+    nibbleIndex++;
   }
+  return output;
+}
+
+char* capitalize(char* input) {
+  size_t length = strlen(input);
+  size_t index = 0;
+  char* output = malloc(sizeof(char) * (length + 1));
+  while (index < length) {
+    char c = input[index];
+    if (c >= 'a' && c <= 'z') {
+      c = c - 'a' + 'A';
+    }
+    output[index] = c;
+    index++;
+  }
+  output[length] = '\0';
+  return output;
+}
 

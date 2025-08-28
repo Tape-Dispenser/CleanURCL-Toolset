@@ -17,6 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -24,69 +26,68 @@
 #include <string.h>
 #include <errno.h>
 #include "tokenize.h"
-#include "lineobject.h"
+#include "codeobjects.h"
 #include "lib/map.h"
 #include "lib/stringutils.h"
 
-struct Line* parse(struct TokenizedOutput code) {
+void parse(struct Code* input) {
+  struct Code code = *input;
   size_t lineIndex = 0;
   size_t tokenIndex;
+  Map defineMap = empty_map();
   while (lineIndex < code.lineCount) {
-    struct Line line = code.tokenizedCode[lineIndex];
+    struct Line line = code.lines[lineIndex];
     tokenIndex = 0;
     while (tokenIndex < line.tokenCount) {
       struct Token token = line.tokens[tokenIndex];
-      switch (token.string[0]) {
-        case 'R':
-        case 'r':
-        case '$':
-          token.type = 'r'; // Register
-          break;
-        case 'M':
-        case 'm':
-        case '#':
-          token.type = 'h'; // Heap
-          break;
-        case '.':
-          token.type = 'l'; // Label
-          break;
-        case '~':
-          token.type = 'e'; // rElative
-          break;
-        case '@':
-          token.type = 'm'; // Macro
-          break;
-        default:
-          if (token.string[0] >= '0' && token.string[0] <= '9') {
-            if (strlen(token.string) < 3) {
-              token.type = 'i'; // decimal immediate
-              break;
-            }
-            if (token.string[1] >= '0' && token.string[1] <= '9') {
-              token.type = 'i'; // decimal immedate
-              break;
-            }
-            if (token.string[1] == 'x' || token.string[1] == 'X') {
-              // hex immediate
-              char* hexValue = getSlice(token.string, 2, strlen(token.string) - 1);
-              free(token.string);
-              // convert hexValue to integer, put int into token.value then convert to string and put into token.string
-              
-            }
-            if (token.string[1] == 'b' || token.string[1] == 'B') {
-              // binary immediate
-              char* binValue = getSlice(token.string, 2, strlen(token.string) - 1);
-              free(token.string);
-              // convert binValue to integer, put int into token.value then convert to string and put into token.string
-            }
+      token.type = '\0';
+      token.value = 0;
 
-            break;
-          }
+      printf("Token: \"%s\"\n", token.string);
+
+      // step one: replace all @DEFINE macros
+      
+      // if token is in define list, replace it
+      char* temp;
+      int returnCode = mapGet(&defineMap, token.string, &temp);
+      if (returnCode == 0 && token.string != temp) {
+        printf("Found token \"%s\" to be replaced with \"%s\"\n", token.string, temp);
+        free(token.string);
+        token.string = strdup(temp);
       }
+      // if token is the first token in a line, capitalize it, and test if it is a define macro
+      if (tokenIndex == 0) {
+        char* capitalized = capitalize(token.string);
+        if (strcmp(capitalized, "@DEFINE") == 0) {
+          // add macro to define map
+          printf("Detected macro at marker %s.\n", line.tokens[line.tokenCount - 1].string);
+          if (line.tokenCount != 4) {
+            fprintf(stderr, "Error at line %s, expected 2 arguments in @DEFINE statement, but got %lu.\n", line.tokens[line.tokenCount - 1].string, line.tokenCount);
+            exit(-1);
+          }
+          printf("Should replace \"%s\" with \"%s\"\n", line.tokens[1].string, line.tokens[2].string);
+          mapAdd(&defineMap, line.tokens[1].string, line.tokens[2].string);
+        }
+        free(capitalized);
+      }
+      
+      // TODO step two: calculate defined constants
+      // this will require defining the layout for how a translation file looks, as well as parsing data from translation file,
+      // ideally parse that data into some sort of struct containing maps
+
+
+
+      // write token back to line
+      line.tokens[tokenIndex] = token;
       tokenIndex++;
     }
+    // write line back to lines
+    code.lines[lineIndex] = line;
     lineIndex++;
   }
+  // write back working code copy to main function's code
+  *input = code;
+  return;
 }
 
 

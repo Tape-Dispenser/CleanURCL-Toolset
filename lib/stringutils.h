@@ -50,4 +50,6 @@ __int8_t replaceEscapeCode(char** output, char* input);
 
 __int128_t hexToInt(char* hexInput);
 
+char* capitalize(char* input);
+
 #endif

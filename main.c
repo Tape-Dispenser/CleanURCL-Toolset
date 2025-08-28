@@ -28,9 +28,10 @@
 
 #include "tokenize.h"
 #include "parse.h"
+#include "codeobjects.h"
 
 
-char* toolsetVersion = "alpha 0.0.2";
+char* toolsetVersion = "dev 0.1.0";
 
 
 // #########################  HELP FUNCTION  #########################
@@ -41,7 +42,7 @@ void help() {
   puts("By Ada (Tape) adadispenser@gmail.com");
   puts("For reporting issues go to https://github.com/Tape-Dispenser/CleanURCL-Toolset/issues");
   puts("");
-  puts("urcltools : urcltools [-h] <input path> <-t path | -e 0-3> [-cuknv] [-e path] [-p int] [-o path]");
+  puts("urcltools : urcltools [-h] <input path> <-t path | -e 0-3> [-cuknv] [-p int] [-o path]");
   puts("  urcl translation toolset");
   puts("");
   puts("  Options:");
@@ -98,6 +99,21 @@ __uint64_t stoi(char* input) {
     i++;
   }
   return output;
+}
+
+void printInternal(struct Code code) {
+  __uint64_t lineIndex = 0;
+  while (lineIndex < code.lineCount) {
+    struct Line line = code.lines[lineIndex];
+    __uint64_t tokenIndex = 0;
+    while (tokenIndex < line.tokenCount) {
+      struct Token token = line.tokens[tokenIndex];
+      printf("%s ", token.string);
+      tokenIndex++;
+    }
+    printf("\n");
+    lineIndex++;
+  }
 }
 
 
@@ -177,20 +193,43 @@ int main(int argc, char **argv) {
   }
   int c;
   size_t index = 0;
-  char* code = malloc(1 * sizeof(char));
+  char* codeText = malloc(1 * sizeof(char));
   while ((c = fgetc(urclFile)) != EOF) {
-    code = realloc(code, (index + 2) * sizeof(char)); // plus one for the null terminator, plus two for index -> size conversion
-    code[index] = c;
+    codeText = realloc(codeText, (index + 2) * sizeof(char)); // plus one for the null terminator, plus two for index -> size conversion
+    codeText[index] = c;
     index++; // index now points to the next free character
   }
   // write null terminator
-  code[index] = 0;
+  codeText[index] = 0;
   fclose(urclFile);
 
   // printf("input address:  %p\n", code);
 
-  struct TokenizedOutput tokenized = tokenize(code);
-  parse(tokenized);
+  struct Line* internalCode;
 
+  struct Code code = tokenize(codeText);
+  
+  printInternal(code);
+
+  parse(&code);
+  
+  printInternal(code);
+
+
+
+  // free everything
+  __uint64_t lineIndex = 0;
+  while (lineIndex < code.lineCount) {
+    struct Line line = code.lines[lineIndex];
+    __uint64_t tokenIndex = 0;
+    while (tokenIndex < line.tokenCount) {
+      struct Token token = line.tokens[0];
+      free(token.string);
+      tokenIndex++;
+    }
+    free(line.tokens);
+    lineIndex++;
+  }
+  free(code.lines);
   return 0;
 }

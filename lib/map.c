@@ -160,6 +160,12 @@ int mapDelete(struct Map* map, char* key) {
 
 void mapKill(Map* map) {
   // free all memory associated with a map
+  size_t index = 0;
+  while (index < map->length) {
+    free(map->keys[index]);
+    free(map->values[index]);
+    index++;
+  }
   free(map->keys);
   free(map->values);
   map->length = 0;

@@ -24,7 +24,7 @@
 #include <errno.h>
 #include "lib/stringutils.h"
 #include "lib/map.h"
-#include "lineobject.h"
+#include "codeobjects.h"
 
 // #############################   CODE  #############################
 
@@ -142,7 +142,7 @@ char* stripWhitespace(char* input) {
   return workingCopy;
 }
 
-struct TokenizedOutput tokenize(char* inputCode) {
+struct Code tokenize(char* inputCode) {
 // step one:   replace all strings with a replacement key (ex. &S1, &S2, &S3, etc.), and remove all types of comments
   int inString = 0;
   int inMultiline = 0;
@@ -389,11 +389,12 @@ struct TokenizedOutput tokenize(char* inputCode) {
     }
     index++;
   }
+  free(tokenList);
 
 // step 5: output code
-  struct TokenizedOutput output;
+  struct Code output;
   output.stringMap = stringMap;
-  output.tokenizedCode = lines;
+  output.lines = lines;
   output.lineCount = linesIndex;
   return output;
 }

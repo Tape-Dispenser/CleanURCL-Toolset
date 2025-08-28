@@ -40,4 +40,6 @@ int mapUpdate(struct Map* map, char* key, char* value);
 
 int mapDelete(struct Map* map, char* key);
 
+void mapKill(Map* map);
+
 #endif
