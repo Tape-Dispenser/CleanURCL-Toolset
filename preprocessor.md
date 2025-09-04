@@ -142,7 +142,7 @@ Example 10:
 ```
 
 ### Prioritization
-Prioritization can be changed using `(<statement>)`
+Prioritization can be changed using `()`
 
 Example 11:
 ```
@@ -155,8 +155,8 @@ The priority of operators and modifiers is as follows:
 3. Immediate Negation `~`, `-`
 3. Multiplication, Division, Modulo `*`, `/`, `%`
 4. Addition, Subtraction `+`, `-`
-5. Bitwise Shift `{{`, `}`
-6. Eqality `==`, `!=`
-7. Relational `{`, `}`, `{=`, `}=`
-8. Logical `&&`, `||`
-9. Logical NOT `!`
+5. Bitwise Shift `<<`, `>>`
+6. Equality `==`, `!=`
+7. Relational `<`, `>`, `<=`, `>=`
+8. Logical NOT `!`
+9. Logical `&&`, `||`

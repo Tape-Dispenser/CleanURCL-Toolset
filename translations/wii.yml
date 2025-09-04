@@ -29,7 +29,7 @@ translations:
       - 'ori r0,r0,<B@l>'
       - 'add <A>,r0,<C>'
     r i i:
-      - 'addis <A>,0,<(B+C)@ha>'
+      - 'addis <A>,0,<(B+C)@h>'
       - 'ori <A>,<A>,<(B+C)@l>'
   sub:
     r r r:
