@@ -1,4 +1,5 @@
 {
+  "translations": {
     "add": {
         "r r r": [
             "add <A>,<B>,<C>"
@@ -28,7 +29,7 @@
         ],
 
         "r r i": [
-           "addis r0,0,<C@ha>",
+            "addis r0,0,<C@ha>",
             "ori r0,r0,<C@l>",
             "subf <A>,r0,<B>"
         ],
@@ -52,7 +53,7 @@
 
         "r i": [
             "addis <A>,0,<(B+1)@ha>",
-           "ori <A>,<A>,<(B+1)@l>"
+            "ori <A>,<A>,<(B+1)@l>"
         ]
     },
     
@@ -401,8 +402,8 @@
         ],
 
         "r i": [
-            "addis <A>,0,<(Bu>1)@ha>",
-            "ori <A>,<A>,<(Bu>1)@l>"
+            "addis <A>,0,<(Bu1)@ha>",
+            "ori <A>,<A>,<(Bu1)@l>"
         ]
     },
 
@@ -456,8 +457,8 @@
         ],
 
         "r i i": [
-            "addis <A>,0,<(Bu>C)@ha>",
-            "ori <A>,<A>,<(Bu>C)@l>"
+            "addis <A>,0,<(BuC)@ha>",
+            "ori <A>,<A>,<(BuC)@l>"
         ]
     },
 
@@ -467,7 +468,7 @@
         ],
 
         "r r i": [
-            "srawi<A>,<B>,<C@l5>"
+            "srawi <A>,<B>,<C@l5>"
         ],
 
         "r i r": [
@@ -1981,10 +1982,11 @@
 
 
 
-    
+      
 
-    
+      
 
 
 
+  }
 }

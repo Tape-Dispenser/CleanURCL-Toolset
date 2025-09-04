@@ -1,0 +1,1445 @@
+config:
+  # comments are used by the transpiler when verbose transpiling is enabled
+  # they will also be used by the optimizer if the same option is enabled
+  comments:
+    # if enabled is false all other comment config is ignored
+    enabled: true
+    # character combination to denote the start of a comment
+    start: '#'
+    # character combination to denote the end of a comment. if left blank, toolset will assume newline terminated comments.
+    end: ''
+  cpu:
+    # reserve 8 registers for system use
+    registers: 24
+    run ram: true
+    data bus: 32
+    address bus: 32
+    base memory address: '.heap'
+
+translations:
+  add:
+    r r r:
+      - 'add <A>,<B>,<C>'
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'add <A>,r0,<B>'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'add <A>,r0,<C>'
+    r i i:
+      - 'addis <A>,0,<(B+C)@ha>'
+      - 'ori <A>,<A>,<(B+C)@l>'
+  sub:
+    r r r:
+      - 'subf <A>,<C>,<B>'
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'subf <A>,r0,<B>'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'subf <A>,<C>,r0'
+    r i i:
+      - 'addis <A>,0,<(B-C)@ha>'
+      - 'ori <A>,<A>,<(B-C)@l>'
+  inc:
+    r r:
+      - 'addi <A>,<B>,1'
+    r i:
+      - 'addis <A>,0,<(B+1)@ha>'
+      - 'ori <A>,<A>,<(B+1)@l>'
+  dec:
+    r r:
+      - 'addi <A>,<B>,-1'
+    r i:
+      - 'addis <A>,0,<(B-1)@ha>'
+      - 'ori <A>,<A>,<(B-1)@l>'
+  mlt:
+    r r r:
+      - 'mullw <A>,<B>,<C>'
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mullw <A>,r0,<B>'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mullw <A>,r0,<C>'
+    r i i:
+      - 'addis <A>,0,<(Bl*C)@ha>'
+      - 'ori <A>,<A>,<(Bl*C)@l>'
+  umlt:
+    r r r:
+      - 'mulhwu <A>,<B>,<C>'
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mulhwu <A>,r0,<B>'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mulhwu <A>,r0,<C>'
+    r i i:
+      - 'addis <A>,0,<(Bhu*C)@ha>'
+      - 'ori <A>,<A>,<(Bhu*C)@l>'
+  sumlt:
+    r r r:
+      - 'mulhw <A>,<B>,<C>'
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mulhw <A>,r0,<B>'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mulhw <A>,r0,<C>'
+    r i i:
+      - 'addis <A>,0,<(Bh*C)@ha>'
+      - 'ori <A>,<A>,<(Bh*C)@l>'
+  div:
+    r r r:
+      - 'divwu <A>,<B>,<C>'
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'divwu <A>,<B>,r0'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'divwu <A>,r0,<C>'
+    'r i i ':
+      - 'addis <A>,0,<(Bu/C)@ha>'
+      - 'ori <A>,<A>,<(Bu/C)@l>'
+  sdiv:
+    r r r:
+      - 'divw <A>,<B>,<C>'
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'divw <A>,<B>,r0'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'divw <A>,r0,<C>'
+    r i i:
+      - 'addis <A>,0,<(B/C)@ha>'
+      - 'ori <A>,<A>,<(B/C)@l>'
+  mod:
+    r r r:
+      - >-
+        # despite what the broadway docs might suggest you need a temp reg for
+        mod if <A> is the same as either <C> or <B>
+      - 'divwu r0,<B>,<C>'
+      - 'mullw r0,r0,<C>'
+      - 'subf <A>,r0,<B>'
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'divwu r3,<B>,r0'
+      - 'mullw r3,r3,r0'
+      - 'subf <A>,r3,<B>'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'divwu r3,r0,<C>'
+      - 'mullw r3,r3,<C>'
+      - 'subf <A>,r3,r0'
+    r i i:
+      - 'addis <A>,0,<(B%C)@ha>'
+      - 'ori <A>,<A>,<(B%C)@l>'
+  neg:
+    r r:
+      - 'neg <A>,<B>'
+    r i:
+      - 'addis <A>,0,<(0-B)@ha>'
+      - 'ori <A>,<A>,<(0-B)@l>'
+  abs:
+    r r:
+      - 'srawi r0,<B>,31'
+      - 'add <A>,<B>,r0'
+      - 'xor <A>,<A>,r0'
+    r i:
+      - 'addis <A>,0,<(|B|)@ha>'
+      - 'ori <A>,<A>,<(|B|)@l>'
+  not:
+    r r:
+      - 'nor <A>,<B>,<B>'
+    r i:
+      - 'addis <A>,0,<(~B)@ha>'
+      - 'ori <A>,<A>,<(~B)@l>'
+  and:
+    r r r:
+      - 'and <A>,<B>,<C>'
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'and <A>,r0,<B>'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'and <A>,r0,<C>'
+    r i i:
+      - 'addis <A>,0,<(B&C)@ha>'
+      - 'ori <A>,<A>,<(B&C)@l>'
+  or:
+    r r r:
+      - 'or <A>,<B>,<C>'
+    r r i:
+      - 'ori <A>,<B>,<C@l>'
+      - 'oris <A>,<A>,<C@ha>'
+    r i r:
+      - 'ori <A>,<C>,<B@l>'
+      - 'oris <A>,<A>,<B@ha>'
+    r i i:
+      - 'addis <A>,0,<(B|C)@ha>'
+      - 'ori <A>,<A>,<(B|C)@l>'
+  xor:
+    r r r:
+      - 'xor <A>,<B>,<C>'
+    r r i:
+      - 'xori <A>,<B>,<C@l>'
+      - 'xoris <A>,<A>,<C@ha>'
+    r i r:
+      - 'xori <A>,<C>,<B@l>'
+      - 'xoris <A>,<A>,<B@ha>'
+    r i i:
+      - 'addis <A>,0,<(B^C)@ha>'
+      - 'ori <A>,<A>,<(B^C)@l>'
+  nand:
+    r r r:
+      - 'nand <A>,<B>,<C>'
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'nand <A>,<B>,r0'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'nand <A>,<C>,r0'
+    r i i:
+      - 'addis <A>,0,<(~(B&C))@ha>'
+      - 'ori <A>,<A>,<(~(B&C))@l>'
+  nor:
+    r r r:
+      - 'nor <A>,<B>,<C>'
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'nor <A>,<B>,r0'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'nor <A>,<C>,r0'
+    r i i:
+      - 'addis <A>,0,<(~(B|C))@ha>'
+      - 'ori <A>,<A>,<(~(B|C))@l>'
+  xnor:
+    r r r:
+      - 'xor <A>,<B>,<C>'
+      - 'nor <A>,<A>,<A>'
+    r r i:
+      - 'xori <A>,<B>,<C@l>'
+      - 'xoris <A>,<A>,<C@ha>'
+      - 'nor <A>,<A>,<A>'
+    r i r:
+      - 'xori <A>,<C>,<B@l>'
+      - 'xoris <A>,<A>,<B@ha>'
+      - 'nor <A>,<A>,<A>'
+    r i i:
+      - 'addis <A>,0,<(~(B^C))@ha>'
+      - 'ori <A>,<A>,<(~(B^C))@l>'
+  lsh:
+    r r:
+      - 'addi r0,0,1'
+      - 'slw <A>,<B>,r0'
+    r i:
+      - 'addis <A>,0,<(B<<1)@ha>'
+      - 'ori <A>,<A>,<(B<<1)@l>'
+  rsh:
+    r r:
+      - 'addi r0,0,1'
+      - 'srw <A>,<B>,r0'
+    r i:
+      - 'addis <A>,0,<(Bu>1)@ha>'
+      - 'ori <A>,<A>,<(Bu>1)@l>'
+  srs:
+    r r:
+      - 'srawi <A>,<B>,1'
+    r i:
+      - 'addis <A>,0,<(B>>1)@ha>'
+      - 'ori <A>,<A>,<(B>>1)@l>'
+  bsl:
+    r r r:
+      - 'slw <A>,<B>,<C>'
+    r r i:
+      - 'addi r0,0,<C@l>'
+      - 'slw <A>,<B>,r0'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'slw <A>,r0,<C>'
+    r i i:
+      - 'addis <A>,0,<(B<<C)@ha>'
+      - 'ori <A>,<A>,<(B<<C)@l>'
+  bsr:
+    r r r:
+      - 'srw <A>,<B>,<C>'
+    r r i:
+      - 'addi r0,0,<C@l>'
+      - 'srw <A>,<B>,r0'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'srw <A>,r0,<C>'
+    r i i:
+      - 'addis <A>,0,<(Bu>C)@ha>'
+      - 'ori <A>,<A>,<(Bu>C)@l>'
+  bss:
+    r r r:
+      - 'sraw <A>,<B>,<C>'
+    r r i:
+      - 'srawi<A>,<B>,<C@l5>'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'sraw <A>,r0,<C>'
+    r i i:
+      - 'addis <A>,0,<(Bs>C)@ha>'
+      - 'ori <A>,<A>,<(Bs>C)@l>'
+  imm:
+    r r:
+      - 'or <A>,<B>,<B>'
+    r i:
+      - 'addis <A>,0,<B@ha>'
+      - 'ori <A>,<A>,<B@l>'
+  mov:
+    r r:
+      - 'or <A>,<B>,<B>'
+    r i:
+      - 'addis <A>,0,<B@ha>'
+      - 'ori <A>,<A>,<B@l>'
+  lod:
+    r r:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'add r3,r3,<B>'
+      - 'lwz <A>,0(r3)'
+    r i:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'add r3,r3,r0'
+      - 'lwz <A>,0(r3)'
+  str:
+    r r:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'add r3,r3,<A>'
+      - 'stw <B>,0(r3)'
+    r i:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'add r3,r3,<A>'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'stw r0,0(r3)'
+    i r:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'add r3,r3,r0'
+      - 'stw <B>,0(r3)'
+    i i:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'add r3,r3,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'stw r0,0(r3)'
+  llod:
+    r r r:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'add r3,r3,<B>'
+      - 'add r3,r3,<C>'
+      - 'lwz <A>,0(r3)'
+    r r i:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,0,<C@l>'
+      - 'add r3,r3,r0'
+      - 'add r3,r3,<B>'
+      - 'lwz <A>,0(r3)'
+    r i r:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,0,<B@l>'
+      - 'add r3,r3,r0'
+      - 'add r3,r3,<C>'
+      - 'lwz <A>,0(r3)'
+    r i i:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<(B+C)@ha>'
+      - 'ori r0,r0,<(B+C)@l>'
+      - 'add r3,r3,r0'
+      - 'lwz <A>,0(r3)'
+  lstr:
+    r r r:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'add r3,r3,<A>'
+      - 'add r3,r3,<B>'
+      - 'stw <C>,0(r3)'
+    r r i:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'add r3,r3,<A>'
+      - 'add r3,r3,<B>'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'stw r0,0(r3)'
+    r i r:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'add r3,r3,r0'
+      - 'add r3,r3,<A>'
+      - 'stw <C>,0(r3)'
+    r i i:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'add r3,r3,r0'
+      - 'add r3,r3,<A>'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'stw r0,0(r3)'
+    i r r:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'add r3,r3,r0'
+      - 'add r3,r3,<B>'
+      - 'stw <C>,0(r3)'
+    i r i:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'add r3,r3,r0'
+      - 'add r3,r3,<B>'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'stw r0,0(r3)'
+    i i r:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<(A+B)@ha>'
+      - 'ori r0,r0,<(A+B)@l>'
+      - 'add r3,r3,r0'
+      - 'stw <C>,0(r3)'
+    i i i:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<(A+B)@ha>'
+      - 'ori r0,r0,<(A+B)@l>'
+      - 'add r3,r3,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'stw r0,0(r3)'
+  cpy:
+    r r:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'add r3,r3,<B>'
+      - 'lwz r0,0(r3)'
+      - 'sub r3,<B>,r3'
+      - 'add r3,r3,<A>'
+      - 'stw r0,0,(r3)'
+    r i:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'add r3,r3,r0'
+      - 'lwz r4,0(r3)'
+      - 'sub r3,r0,r3'
+      - 'add r3,r3,<A>'
+      - 'stw r4,0(r3)'
+    i r:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'add r3,r3,<B>'
+      - 'lwz r4,0(r3)'
+      - 'sub r3,<B>,r3'
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'add r3,r3,r0'
+      - 'stw r4,0(r3)'
+    i i:
+      - 'addis r3,0,.heap@ha'
+      - 'ori r3,r3,.heap@l'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'add r3,r3,r0'
+      - 'lwz r4,0(r3)'
+      - 'sub r3,r0,r3'
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,0,<A@l>'
+      - 'add r3,r3,r0'
+      - 'stw r4,0(r3)'
+  pop:
+    r:
+      - 'addis r3,0,0x8132'
+      - 'ori r3,r3,0xFFFF'
+      - 'subf r3,r2,r3'
+      - 'lwz <A>,0(r3)'
+      - 'addi r2,r2,-1'
+  psh:
+    r:
+      - 'addis r3,0,0x8132'
+      - 'ori r3,r3,0xFFFF'
+      - 'addi r2,r2,1'
+      - 'subf r3,r2,r3'
+      - 'stw <A>,0(r3)'
+    i:
+      - 'addis r3,0,0x8132'
+      - 'ori r3,r3,0xFFFF'
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'addi r2,r2,1'
+      - 'subf r3,r2,r3'
+      - 'stw r0,0(r3)'
+  cal:
+    r:
+      - 'addis r3,0,0x8132'
+      - 'ori r3,r3,0xFFFF # load r3 with top of stack'
+      - 'addi r2,r2,1 # increment stack pointer'
+      - 'subf r3,r2,r3 # subtract stack pointer from top of stack'
+      - 'mtspr 9,<A> # move <A> to count register'
+      - 'bl 4 # branch to CIA + 4 (NIA) and put NIA in LR'
+      - 'mfspr r0,8 # move LR to r0'
+      - 'addi r0,r0,x # add 4*no. of instructions after ''bl 4'' to LR'
+      - 'stw r0,0(r3) # store return addr to stack'
+      - 'bcctr 20,0 # branch to count register always'
+    i:
+      - 'addis r3,0,0x8132'
+      - 'ori r3,r3,0xFFFF # load r3 with top of stack'
+      - 'addi r2,r2,1 # increment stack pointer'
+      - 'subf r3,r2,r3 # subtract stack pointer from top of stack'
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0 # move <A> to count register'
+      - 'bl 4 # branch to CIA + 4 (NIA) and put NIA in LR'
+      - 'mfspr r0,8 # move LR to r0'
+      - 'addi r0,r0,x # add 4*no. of instructions after ''bl 4'' to LR'
+      - 'stw r0,0(r3) # store return addr to stack'
+      - 'bcctr 20,0 # branch to count register always'
+  ret:
+    '':
+      - 'addis r3,0,0x8132'
+      - 'ori r3,r3,0xFFFF'
+      - 'subf r3,r2,r3'
+      - 'lwz r0,0(r3)'
+      - 'addi r2,r2,-1'
+      - 'mtspr r0,9'
+      - 'bcctr 20,0'
+  nop:
+    '':
+      - 'ori 0,0,0'
+  hlt:
+    '':
+      - 'b 0 # branch to the address of this instruction (infinite loop)'
+      - i should replace this with a call to exit(0)
+  jmp:
+    r:
+      - 'mtspr 9,<A> # move <A> to special purpose register 9 (count register)'
+      - >-
+        bcctr 20,0 # branch to count register conditionally, with BO field 20
+        (branch always), using condition 0 (ignored) 
+    i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'bcctr 20,0'
+  bge:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,<C>'
+      - >-
+        bcctr 4,0 # branch to count register conditionally, with BO field 4
+        (branch if false), using condition 0 (less than)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 4,0'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 4,0'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,r3'
+      - 'bcctr 4,0'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmplw 0,<B>,<C>'
+      - 'bcctr 4,0'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 4,0'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 4,0'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'cmplw 0,r3,r0'
+      - 'bcctr 4,0'
+  brl:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,<C>'
+      - >-
+        bcctr 12,0 # branch to count register conditionally, with BO field 12
+        (branch if true), using condition 0 (less than)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 12,0'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 12,0'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,r3'
+      - 'bcctr 12,0'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmplw 0,<B>,<C>'
+      - 'bcctr 12,0'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 12,0'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 12,0'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'cmplw 0,r3,r0'
+      - 'bcctr 12,0'
+  brg:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,<C>'
+      - >-
+        bcctr 12,1 # branch to count register conditionally, with BO field 12
+        (branch if true), using condition 1 (greater than)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 12,1'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 12,1'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,r3'
+      - 'bcctr 12,1'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmplw 0,<B>,<C>'
+      - 'bcctr 12,1'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 12,1'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 12,1'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'cmplw 0,r3,r0'
+      - 'bcctr 12,1'
+  bre:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,<C>'
+      - >-
+        bcctr 12,2 # branch to count register conditionally, with BO field 12
+        (branch if true), using condition 2 (equal)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 12,2'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 12,2'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,r3'
+      - 'bcctr 12,2'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmplw 0,<B>,<C>'
+      - 'bcctr 12,2'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 12,2'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 12,2'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'cmplw 0,r3,r0'
+      - 'bcctr 12,2'
+  bne:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,<C>'
+      - >-
+        bcctr 4,2 # branch to count register conditionally, with BO field 4
+        (branch if false), using condition 2 (equal)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 4,2'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 4,2'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,r3'
+      - 'bcctr 4,2'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmplw 0,<B>,<C>'
+      - 'bcctr 4,2'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 4,2'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 4,2'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'cmplw 0,r3,r0'
+      - 'bcctr 4,2'
+  bod:
+    r r:
+      - 'mtspr 9,<A>'
+      - 'andi r0,<B>,1'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 4,2 # branch if lsb of <B> is not equal to 0'
+    r i:
+      - 'mtspr 9,<A>'
+      - 'addi r0,0,<B@l>'
+      - 'andi r0,r0,1'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 4,2'
+    i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'andi r0,<B>,1'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 4,2'
+    i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addi r0,0,<B@l>'
+      - 'andi r0,r0,1'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 4,2'
+  bev:
+    r r:
+      - 'mtspr 9,<A>'
+      - 'andi r0,<B>,1'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 12,2 # branch if lsb of <B> is equal to 0'
+    r i:
+      - 'mtspr 9,<A>'
+      - 'addi r0,0,<B@l>'
+      - 'andi r0,r0,1'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 12,2'
+    i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'andi r0,<B>,1'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 12,2'
+    i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addi r0,0,<B@l>'
+      - 'andi r0,r0,1'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 12,2'
+  ble:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,<C>'
+      - >-
+        bcctr 4,1 # branch to count register conditionally, with BO field 4
+        (branch if false), using condition 1 (greater than)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 4,1'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 4,1'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmplw 0,r0,r3'
+      - 'bcctr 4,1'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmplw 0,<B>,<C>'
+      - 'bcctr 4,1'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'cmplw 0,<B>,r0'
+      - 'bcctr 4,1'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmplw 0,r0,<C>'
+      - 'bcctr 4,1'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'cmplw 0,r3,r0'
+      - 'bcctr 4,1'
+  brz:
+    r r:
+      - 'mtspr 9,<A>'
+      - 'cmplwi 0,<B>,0'
+      - 'bcctr 12,2 # branch if <B> is equal to 0'
+    r i:
+      - 'mtspr 9,<A>'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 12,2'
+    i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmplwi 0,<B>,0'
+      - 'bcctr 12,2'
+    i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 12,2'
+  bnz:
+    r r:
+      - 'mtspr 9,<A>'
+      - 'cmplwi 0,<B>,0'
+      - 'bcctr 4,2 # branch if <B> is not equal to 0'
+    r i:
+      - 'mtspr 9,<A>'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 4,2'
+    i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmplwi 0,<B>,0'
+      - 'bcctr 4,2'
+    i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 4,2'
+  brn:
+    r r:
+      - 'mtspr 9,<A>'
+      - 'andis r0,<B>,0x8000'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 4,2 # branch if msb of <B> is not equal to 0'
+    r i:
+      - 'mtspr 9,<A>'
+      - 'addis r0,0,<B@ha>'
+      - 'andis r0,r0,0x8000'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 4,2'
+    i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'andis r0,<B>,0x8000'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 4,2'
+    i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'andis r0,r0,0x8000'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 4,2'
+  brp:
+    r r:
+      - 'mtspr 9,<A>'
+      - 'andis r0,<B>,0x8000'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 12,2 # branch if msb of <B> is equal to 0'
+    r i:
+      - 'mtspr 9,<A>'
+      - 'addis r0,0,<B@ha>'
+      - 'andis r0,r0,0x8000'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 12,2'
+    i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'andis r0,<B>,0x8000'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 12,2'
+    i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'andis r0,r0,0x8000'
+      - 'cmplwi 0,r0,0'
+      - 'bcctr 12,2'
+  brc:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'add. r0,<B>,<C>'
+      - >-
+        bcctr 12,3 # branch to count register conditionally, with BO field 12
+        (branch if true), using condition 3 (overflow)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'add. r0,<B>,r0'
+      - 'bcctr 12,3'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'add. r0,r0,<C>'
+      - 'bcctr 12,3'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'add. r0,r0,r3'
+      - 'bcctr 12,3'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'add. r0,<B>,<C>'
+      - 'bcctr 12,3'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'add. r0,<B>,r0'
+      - 'bcctr 12,3'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'add. r0,r0,<C>'
+      - 'bcctr 12,3'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'add. r0,r3,r0'
+      - 'bcctr 12,3'
+  bnc:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'add. r0,<B>,<C>'
+      - >-
+        bcctr 4,3 # branch to count register conditionally, with BO field 4
+        (branch if false), using condition 3 (overflow)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'add. r0,<B>,r0'
+      - 'bcctr 4,3'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'add. r0,r0,<C>'
+      - 'bcctr 4,3'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'add. r0,r0,r3'
+      - 'bcctr 4,3'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'add. r0,<B>,<C>'
+      - 'bcctr 4,3'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'add. r0,<B>,r0'
+      - 'bcctr 4,3'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'add. r0,r0,<C>'
+      - 'bcctr 4,3'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'add. r0,r3,r0'
+      - 'bcctr 4,3'
+  sbrl:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,<B>,<C>'
+      - >-
+        bcctr 12,0 # branch to count register conditionally, with BO field 12
+        (branch if true), using condition 0 (less than)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,<B>,r0'
+      - 'bcctr 12,0'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,r0,<C>'
+      - 'bcctr 12,0'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,r0,r3'
+      - 'bcctr 12,0'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmpw 0,<B>,<C>'
+      - 'bcctr 12,0'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'cmpw 0,<B>,r0'
+      - 'bcctr 12,0'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmpw 0,r0,<C>'
+      - 'bcctr 12,0'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'cmpw 0,r3,r0'
+      - 'bcctr 12,0'
+  sbrg:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,<B>,<C>'
+      - >-
+        bcctr 12,1 # branch to count register conditionally, with BO field 12
+        (branch if true), using condition 1 (greater than)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,<B>,r0'
+      - 'bcctr 12,1'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,r0,<C>'
+      - 'bcctr 12,1'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,r0,r3'
+      - 'bcctr 12,1'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmpw 0,<B>,<C>'
+      - 'bcctr 12,1'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'cmpw 0,<B>,r0'
+      - 'bcctr 12,1'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmpw 0,r0,<C>'
+      - 'bcctr 12,1'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'cmpw 0,r3,r0'
+      - 'bcctr 12,1'
+  sble:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,<B>,<C>'
+      - >-
+        bcctr 4,1 # branch to count register conditionally, with BO field 4
+        (branch if false), using condition 1 (greater than)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,<B>,r0'
+      - 'bcctr 4,1'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,r0,<C>'
+      - 'bcctr 4,1'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,r0,r3'
+      - 'bcctr 4,1'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmpw 0,<B>,<C>'
+      - 'bcctr 4,1'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'cmpw 0,<B>,r0'
+      - 'bcctr 4,1'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmpw 0,r0,<C>'
+      - 'bcctr 4,1'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'cmpw 0,r3,r0'
+      - 'bcctr 4,1'
+  sbge:
+    r r r:
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,<B>,<C>'
+      - >-
+        bcctr 4,0 # branch to count register conditionally, with BO field 4
+        (branch if false), using condition 0 (less than)
+    r r i:
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,<B>,r0'
+      - 'bcctr 4,0'
+    r i r:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,r0,<C>'
+      - 'bcctr 4,0'
+    r i i:
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'addis r3,0,<C@ha>'
+      - 'ori r3,r3,<C@l>'
+      - 'mtspr 9,<A>'
+      - 'cmpw 0,r0,r3'
+      - 'bcctr 4,0'
+    i r r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'cmpw 0,<B>,<C>'
+      - 'bcctr 4,0'
+    i r i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'cmpw 0,<B>,r0'
+      - 'bcctr 4,0'
+    i i r:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<B@ha>'
+      - 'ori r0,r0,<B@l>'
+      - 'cmpw 0,r0,<C>'
+      - 'bcctr 4,0'
+    i i i:
+      - 'addis r0,0,<A@ha>'
+      - 'ori r0,r0,<A@l>'
+      - 'mtspr 9,r0'
+      - 'addis r0,0,<C@ha>'
+      - 'ori r0,r0,<C@l>'
+      - 'addis r3,0,<B@ha>'
+      - 'ori r3,r3,<B@l>'
+      - 'cmpw 0,r3,r0'
+      - 'bcctr 4,0'
+  in:
+    r 1: []
