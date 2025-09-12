@@ -25,12 +25,15 @@
 #include <getopt.h>
 #include <string.h>
 #include <errno.h>
+
+#include <libfyaml.h>
+
 #include "tokenize.h"
 #include "codeobjects.h"
 #include "lib/map.h"
 #include "lib/stringutils.h"
 
-void parse(struct Code* input) {
+void parse(struct Code* input, struct fy_document* translations) {
   struct Code code = *input;
   size_t lineIndex = 0;
   size_t tokenIndex;

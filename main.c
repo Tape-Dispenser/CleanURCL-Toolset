@@ -23,6 +23,8 @@
 #include <string.h>
 #include <errno.h>
 
+#include <libfyaml.h>
+
 #include "lib/stringutils.h"
 #include "lib/map.h"
 
@@ -203,6 +205,12 @@ int main(int argc, char **argv) {
   codeText[index] = 0;
   fclose(urclFile);
 
+  struct fy_document* translationYaml = fy_document_build_from_file(NULL, translationPath);
+  if (!translationYaml) {
+    fprintf(stderr, "Failed to build YAML document from file \"%s\". Are you sure it exists?", translationPath);
+    exit(-1);
+  }
+
   // printf("input address:  %p\n", code);
 
   struct Line* internalCode;
@@ -211,7 +219,7 @@ int main(int argc, char **argv) {
   
   printInternal(code);
 
-  parse(&code);
+  parse(&code, translationYaml);
   
   printInternal(code);
 

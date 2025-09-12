@@ -9,12 +9,27 @@ config:
     # character combination to denote the end of a comment. if left blank, toolset will assume newline terminated comments.
     end: ''
   cpu:
-    # reserve 8 registers for system use
-    registers: 24
+    # reserve registers 0 - 13 for system use
+    registers: 
+      count: 18
+      first: 14
+      # use this in cases where the cpu's first register isn't register 1
+      # example: r0 is a gpr
+      # this value will be ignored if a custom order is specified
+
+      # order: 
+      # if this is specified, urcl registers will be translated to the specified registers
+      # otherwise, urcltools will go in numerical order starting at register 1
+      # - 3
+      # - 5
+      # - 6
+      # - 7
+
     run ram: true
-    data bus: 32
-    address bus: 32
-    base memory address: '.heap'
+    data bus: 32 # this is @BITS
+    address bus: 32 # this is a CleanURCL only feature
+    base memory address: '.ppcHeap'
+    
 
 translations:
   add:

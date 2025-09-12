@@ -22,6 +22,6 @@
 
 #include "codeobjects.h"
 
-struct Line* parse(struct Code* code);
+struct Line* parse(struct Code* code, struct fy_document* translations);
 
 #endif
