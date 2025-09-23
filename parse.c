@@ -38,6 +38,13 @@ void parse(struct Code* input, struct fy_document* translations) {
   size_t lineIndex = 0;
   size_t tokenIndex;
   Map defineMap = empty_map();
+
+  __uint128_t dataBitsMacro = 8;
+  __uint128_t addressBitsMacro = 8;
+  __uint128_t registerMacro = 8;
+  __uint128_t ramWordsMacro = 256;
+  uint8_t runRam = 0;
+
   while (lineIndex < code.lineCount) {
     struct Line line = code.lines[lineIndex];
     tokenIndex = 0;
@@ -77,6 +84,16 @@ void parse(struct Code* input, struct fy_document* translations) {
       // TODO step two: calculate defined constants
       // this will require defining the layout for how a translation file looks, as well as parsing data from translation file,
       // ideally parse that data into some sort of struct containing maps
+
+      int count;
+      // count = fy_document_scanf(fyd, "/invoice %u /bill-to/given %1023s", &invoice_num, given);
+      count = fy_document_scanf(translations, "/config/cpu/data-bus %u", &dataBitsMacro);
+      if (count == 0) {
+        dataBitsMacro = 8;
+      }
+      else if (count > 1) {
+        fprintf(stderr, "Error in provided translation file, expected 0 or 1 definitions of \"/config/cpu/data-bus\", got %u.", count);
+      }
 
 
 

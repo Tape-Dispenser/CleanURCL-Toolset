@@ -25,10 +25,10 @@ config:
       # - 6
       # - 7
 
-    run ram: true
-    data bus: 32 # this is @BITS
-    address bus: 32 # this is a CleanURCL only feature
-    base memory address: '.ppcHeap'
+    run-ram: true
+    data-bus: 32 # this is @BITS
+    address-bus: 32 # this is a CleanURCL only feature
+    base-memory-address: '.ppcHeap'
     
 
 translations:
