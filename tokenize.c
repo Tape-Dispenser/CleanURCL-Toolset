@@ -45,9 +45,9 @@ char* stringToArray(char* input) {
   if (output[0] == '\'') {
     isString = 0;
   }
-  cutStringInPlace(&output, 0, 0);
+  deleteStringInPlace(&output, 0, 0);
   size_t endIndex = strlen(output) - 1;
-  cutStringInPlace(&output, endIndex, endIndex);
+  deleteStringInPlace(&output, endIndex, endIndex);
   // endIndex is the string length
   //printf("String length: %lu\n", endIndex);
 
@@ -120,7 +120,7 @@ char* stripWhitespace(char* input) {
         index = whiteStart + 1;
       }
       else { 
-        cutStringInPlace(&workingCopy, whiteStart, whiteEnd);
+        deleteStringInPlace(&workingCopy, whiteStart, whiteEnd);
         index = whiteStart;
       }
       c = workingCopy[index];
@@ -221,7 +221,7 @@ struct Code tokenize(char* inputCode) {
           free(replacement);
           index = tokenStart;
         } else {
-          cutStringInPlace(&inputCode, tokenStart, tokenEnd);
+          deleteStringInPlace(&inputCode, tokenStart, tokenEnd);
           index = tokenStart;
         }
         index = tokenStart;

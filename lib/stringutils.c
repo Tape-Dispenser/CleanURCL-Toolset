@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include "stack.h"
 
-char* cutString(char* input, size_t start, size_t end) {
+char* deleteString(char* input, size_t start, size_t end) {
   // cut out a section from input string between start and end indeces (start and end index are both cut out)
   
   // sanity check inputs
@@ -55,11 +55,18 @@ char* cutString(char* input, size_t start, size_t end) {
   return outputString;
 }
 
-void cutStringInPlace(char** base, size_t start, size_t end) {
-  char* temp = cutString(*base, start, end);
+void deleteStringInPlace(char** base, size_t start, size_t end) {
+  char* temp = deleteString(*base, start, end);
   char* deleteThis = *base;
   *base = temp;
   free(deleteThis);
+}
+
+char* cutString(char** base, size_t start, size_t end) {
+  // remove a section from base string and return a pointer to a copy of the data removed (like ctrl+x)
+  char* output = getSlice(base, start, end);
+  deleteStringInPlace(base, start, end);
+  return output;
 }
 
 char* replaceString(char* base, char* replacement, size_t start, size_t end) {

@@ -20,9 +20,11 @@
 #define STRINGUTILS_H
 #include <string.h>
 
-char* cutString(char* input, size_t start, size_t end);
+char* deleteString(char* input, size_t start, size_t end);
 
-void cutStringInPlace(char** base, size_t start, size_t end);
+void deleteStringInPlace(char** base, size_t start, size_t end);
+
+char* cutString(char** base, size_t start, size_t end);
 
 char* replaceString(char* base, char* replacement, size_t start, size_t end);
 
