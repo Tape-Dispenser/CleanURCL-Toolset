@@ -20,6 +20,8 @@
 #define STRINGUTILS_H
 #include <string.h>
 
+char* getSlice(char* base, size_t startIndex, size_t endIndex);
+
 char* deleteString(char* input, size_t start, size_t end);
 
 void deleteStringInPlace(char** base, size_t start, size_t end);
@@ -45,8 +47,6 @@ void stringToIntStringInPlace(char** input);
 char* byteToAscii(unsigned char input);
 
 char* reverseString(char* input);
-
-char* getSlice(char* base, size_t startIndex, size_t endIndex);
 
 __int8_t replaceEscapeCode(char** output, char* input);
 

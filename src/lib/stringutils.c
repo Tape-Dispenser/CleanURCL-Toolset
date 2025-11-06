@@ -21,6 +21,38 @@
 #include <stdio.h>
 #include "stack.h"
 
+char* getSlice(char* base, size_t startIndex, size_t endIndex) {
+  // sanity check inputs
+  size_t baseLength = strlen(base);
+  if (startIndex >= baseLength || endIndex >= baseLength) {
+    return NULL;
+  }
+  if (startIndex > endIndex) {
+    return NULL;
+  }
+
+  size_t index = 0;
+  char c = base[index];
+  char* output = malloc(1 * sizeof(char));
+  size_t outputIndex = 0;
+  output[0] = '\0';
+  while (c != 0) {
+    if (index >= startIndex) {
+      output = realloc(output, outputIndex + 2); // +1 for new char, +1 for null terminator
+      output[outputIndex] = c;
+      output[outputIndex + 1] = '\0';
+      outputIndex++;
+    }
+    if (index == endIndex) {
+      return output;
+    }
+
+    index++;
+    c = base[index];
+  }
+  return NULL;
+}
+
 char* deleteString(char* input, size_t start, size_t end) {
   // cut out a section from input string between start and end indeces (start and end index are both cut out)
   
@@ -64,7 +96,7 @@ void deleteStringInPlace(char** base, size_t start, size_t end) {
 
 char* cutString(char** base, size_t start, size_t end) {
   // remove a section from base string and return a pointer to a copy of the data removed (like ctrl+x)
-  char* output = getSlice(base, start, end);
+  char* output = getSlice(*base, start, end);
   deleteStringInPlace(base, start, end);
   return output;
 }
@@ -287,38 +319,6 @@ void stringToIntStringInPlace(char** input) {
   *input = temp;
   free(deleteThis);
   
-}
-
-char* getSlice(char* base, size_t startIndex, size_t endIndex) {
-  // sanity check inputs
-  size_t baseLength = strlen(base);
-  if (startIndex >= baseLength || endIndex >= baseLength) {
-    return NULL;
-  }
-  if (startIndex > endIndex) {
-    return NULL;
-  }
-
-  size_t index = 0;
-  char c = base[index];
-  char* output = malloc(1 * sizeof(char));
-  size_t outputIndex = 0;
-  output[0] = '\0';
-  while (c != 0) {
-    if (index >= startIndex) {
-      output = realloc(output, outputIndex + 2); // +1 for new char, +1 for null terminator
-      output[outputIndex] = c;
-      output[outputIndex + 1] = '\0';
-      outputIndex++;
-    }
-    if (index == endIndex) {
-      return output;
-    }
-
-    index++;
-    c = base[index];
-  }
-  return NULL;
 }
 
 __int8_t replaceEscapeCode(char** output, char* input) {
