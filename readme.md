@@ -1,6 +1,6 @@
 This project is currently being reworked in C, and as such does not currently work.
 
-##Command Line Syntax:
+## Command Line Syntax:
 `urcltools [-h] <input path> <-t path | -e [0-3]> [-cuknv] [-p int] [-o path]`
 ### Options:
 - -h : print help menu.
@@ -14,7 +14,7 @@ This project is currently being reworked in C, and as such does not currently wo
 - -n : append a null terminator to the end of every string immediate.
 - -v : verbose transpiling. If translation file does not declare a comment style, an error is returned.
 
-##Supported Macros:
+## Supported Macros:
 - `@DEFINE <A> <B>`: defines `<A>` as a macro equivalent to `<B>`. If `<B>` contains spaces or newlines, it must be a string. (not implemented)
 - `@DEBUG`: pauses execution when code reaches this line. (not implemented)
 - `@DEBUG onwrite <A>`: pauses execution when memory address, register, or port `<A>` is written to. (not implemented)
