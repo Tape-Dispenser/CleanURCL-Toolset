@@ -33,7 +33,7 @@
 #include "codeobjects.h"
 
 
-char* toolsetVersion = "dev 0.1.0";
+char* toolsetVersion = "dev 0.1.1";
 
 
 // #########################  HELP FUNCTION  #########################
