@@ -19,3 +19,4 @@ This project is currently being reworked in C, and as such does not currently wo
 - `@DEBUG`: pauses execution when code reaches this line. (not implemented)
 - `@DEBUG onwrite <A>`: pauses execution when memory address, register, or port `<A>` is written to. (not implemented)
 - `@DEBUG onread <A>`: pauses execution when memory address, register, or port `<A>` is read from. (not implemented)
+- `@{<statement>}` : defines a compile-time immediate statement, as defined in preprocessor.md (not implemented)
