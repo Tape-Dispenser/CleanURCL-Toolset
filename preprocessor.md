@@ -2,21 +2,24 @@
 
 ## Immediates
 
-When working with immediates in translation files, sometimes it is necessary to modify the CleanURCL immediates in order to suit the needs of the target architecture. A number of preprocessor modifiers and operations exist for precomputing values.
+When working with immediates, sometimes it is necessary to calculate constants at compile time. A number of preprocessor modifiers and operations exist for precomputing values.
 
-To declare the start of a preprocessor immediate statement, wrap the statement in curly brackets.
+To declare the start of a preprocessor immediate statement, wrap the statement in curly brackets. If using preprocessor statements in CleanURCL code, use the macro symbol (`@`) at the start.
+
+Preprocessor immediate statements can be used both in CleanURCL code and in translation files.
 
 Example 1: 
 ```
-...
-"umlt": {
-...
-  "r i i": [
-    "addis {A},0,{(B@hu*C)@h}"
-    "ori {A},{A},{(B@hu*C)@l}"
-  ]
+ADD R1 R2 @{BITS * 2}
+```
+
+Example 2:
+```
+"imm": {
+  "r r r": [
+    "add {A},{B},{C}"
+  ],
 },
-...
 ```
 
 ### Values
@@ -59,7 +62,7 @@ Example 4:
 {A@hu}
 ```
 
-If used on registers, transpiler will throw an error.   
+If used on registers, preprocessor will throw an error.   
 
 
 #### Halves
