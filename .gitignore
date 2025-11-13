@@ -6,3 +6,4 @@ core.*
 build/
 core/
 temp/
+test.c
