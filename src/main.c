@@ -32,6 +32,10 @@
 #include "parse.h"
 #include "codeobjects.h"
 
+extern void adainit();
+extern void adafinal();
+extern int processStatement(char* statement, char* a, char* b, char* c);
+
 
 char* toolsetVersion = "dev 0.1.1";
 
