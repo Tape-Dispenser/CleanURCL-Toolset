@@ -128,13 +128,14 @@ void printInternal(struct Code code) {
 int main(int argc, char **argv) {
   int option;
   char* urclPath;
+  processStatement("~A== BITS* (  2- B    @     h )", "52", "67", "12");
 
   // parse arguments
   while ((option = getopt(argc, argv, ":hcuknvt:e:p:o:")) != -1) {
     
     switch (option) {
       case 'h': {
-        help();
+        // help();
         exit(0);
       }
       case 'c': {
