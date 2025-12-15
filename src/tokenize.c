@@ -148,7 +148,6 @@ struct Code tokenize(char* inputCode) {
   int inMultiline = 0;
   int inComment = 0;
   char* currentString;
-  size_t stringIndex;
   size_t stringCount = 0;
   size_t tokenStart;
   size_t tokenEnd;
@@ -159,9 +158,7 @@ struct Code tokenize(char* inputCode) {
   while (c != 0) {
     c = inputCode[index];
     if (inString == 1) {
-      currentString[stringIndex] = c;
-      stringIndex++;
-      currentString = realloc(currentString, (stringIndex + 1) * sizeof(char));
+      appendInPlace(&currentString, c);
       if (c != '"' && c != '\'') {
         index++;
         continue;
@@ -172,8 +169,6 @@ struct Code tokenize(char* inputCode) {
         continue;
       }
       inString = 0;
-      // add null terminator to string
-      currentString[stringIndex] = '\0';
       tokenEnd = index;
       // add string to map and replace with the string id (&S1, &S2, &S3, etc.)
       stringCount++;
@@ -241,9 +236,8 @@ struct Code tokenize(char* inputCode) {
         case '\'':
           inString = 1;
           currentString = malloc(2 * sizeof(char));
-          stringIndex = 0;
-          currentString[stringIndex] = c;
-          stringIndex++;
+          currentString[0] = '\0';
+          appendInPlace(&currentString, c);
           tokenStart = index;
           break;
         case '*':

@@ -1,1 +1,0 @@
-package Unbounded_String_Vectors is new Ada.Containers.Indefinite_Vectors(Element_Type => Unbounded_String);

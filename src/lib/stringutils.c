@@ -21,6 +21,22 @@
 #include <stdio.h>
 #include "stack.h"
 
+char* append(char* base, char c) {
+  __uint64_t length = strlen(base);
+  char* output = malloc((length + 2) * sizeof(char)); // 1 extra byte for new char and 1 extra for null terminator
+  strcpy(output, base);
+  output[length] = c;
+  output[length + 1] = '\0';
+  return output;
+}
+
+void appendInPlace(char** base, char c) {
+  char* temp = append(*base, c);
+  char* deleteThis = *base;
+  *base = temp;
+  free(deleteThis);
+}
+
 char* getSlice(char* base, size_t startIndex, size_t endIndex) {
   // sanity check inputs
   size_t baseLength = strlen(base);

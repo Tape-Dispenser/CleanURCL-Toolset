@@ -20,6 +20,10 @@
 #define STRINGUTILS_H
 #include <string.h>
 
+char* append(char* base, char c);
+
+void appendInPlace(char** base, char c);
+
 char* getSlice(char* base, size_t startIndex, size_t endIndex);
 
 char* deleteString(char* input, size_t start, size_t end);

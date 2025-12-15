@@ -68,29 +68,32 @@ done
 
 # build ada files
 #gnatmake --GCC="gcc -ggdb3" -c unit1.adb
-for i in "${ADBFILES[@]}"
-do
-  gnatmake ${GCCARGS} -D "${TEMPFOLDER}" -c "${i}"
-done
-
-# bind .ali files
-finalAli="${ADBFILES[-1]}"
-finalAli=$(basename ${finalAli})
-finalAli="${TEMPFOLDER}/${finalAli%.*}.ali"
-
-# get array of all .ali files
-declare -a aliFiles
-for i in "${ADBFILES[@]}"
-do
-  aliFileName=$(basename ${i})
-  aliFile="${TEMPFOLDER}/${aliFileName%.*}.ali"
-  aliFiles[${#aliFiles[@]}]="${aliFile}"
-done
-
-#gnatbind -n unit1.ali unit2.ali
 adbCount=${#ADBFILES[@]}
 if (( adbCount > 0 )); then
-  gnatbind -n "${aliFiles[@]}"
+  for i in "${ADBFILES[@]}"
+  do
+    gnatmake ${GCCARGS} -D "${TEMPFOLDER}" -c "${i}"
+  done
+
+  # bind .ali files
+  finalAli="${ADBFILES[-1]}"
+  finalAli=$(basename ${finalAli})
+  finalAli="${TEMPFOLDER}/${finalAli%.*}.ali"
+
+  # get array of all .ali files
+  declare -a aliFiles
+  for i in "${ADBFILES[@]}"
+  do
+    aliFileName=$(basename ${i})
+    aliFile="${TEMPFOLDER}/${aliFileName%.*}.ali"
+    aliFiles[${#aliFiles[@]}]="${aliFile}"
+  done
+
+  #gnatbind -n unit1.ali unit2.ali
+  adbCount=${#ADBFILES[@]}
+  if (( adbCount > 0 )); then
+    gnatbind -n "${aliFiles[@]}"
+  fi
 fi
 
 # link into finished output

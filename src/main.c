@@ -32,12 +32,14 @@
 #include "parse.h"
 #include "codeobjects.h"
 
+/*
 extern void adainit();
 extern void adafinal();
 extern int processStatement(char* statement, char* a, char* b, char* c);
+*/
 
 
-char* toolsetVersion = "dev 0.1.1";
+char* toolsetVersion = "dev 0.0.5";
 
 
 // #########################  HELP FUNCTION  #########################
@@ -128,14 +130,14 @@ void printInternal(struct Code code) {
 int main(int argc, char **argv) {
   int option;
   char* urclPath;
-  processStatement("~A== BITS* (  2- B    @     h )", "52", "67", "12");
+  //processStatement("~A== BITS* (  2- B    @     h )", "52", "67", "12");
 
   // parse arguments
   while ((option = getopt(argc, argv, ":hcuknvt:e:p:o:")) != -1) {
     
     switch (option) {
       case 'h': {
-        // help();
+        help();
         exit(0);
       }
       case 'c': {
@@ -199,22 +201,19 @@ int main(int argc, char **argv) {
     printf("error no. %d while opening file \"%s\"\n", errno, urclPath);
   }
   int c;
-  size_t index = 0;
   char* codeText = malloc(1 * sizeof(char));
   while ((c = fgetc(urclFile)) != EOF) {
-    codeText = realloc(codeText, (index + 2) * sizeof(char)); // plus one for the null terminator, plus two for index -> size conversion
-    codeText[index] = c;
-    index++; // index now points to the next free character
+    appendInPlace(&codeText, c);
   }
-  // write null terminator
-  codeText[index] = 0;
   fclose(urclFile);
 
+  /*
   struct fy_document* translationYaml = fy_document_build_from_file(NULL, translationPath);
   if (!translationYaml) {
     fprintf(stderr, "Failed to build YAML document from file \"%s\". Are you sure it exists?", translationPath);
     exit(-1);
   }
+  */
 
   // printf("input address:  %p\n", code);
 
@@ -224,9 +223,9 @@ int main(int argc, char **argv) {
   
   printInternal(code);
 
-  parse(&code, translationYaml);
+  //parse(&code, translationYaml);
   
-  printInternal(code);
+  //printInternal(code);
 
 
 
