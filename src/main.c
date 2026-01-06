@@ -32,11 +32,13 @@
 #include "parse.h"
 #include "codeobjects.h"
 
-/*
+
 extern void adainit();
 extern void adafinal();
-extern int processStatement(char* statement, char* a, char* b, char* c);
-*/
+// extern int hello_world(char* statement, char* a, char* b, char* c);
+extern void hello_world();
+extern void token_testing(char* input);
+
 
 
 char* toolsetVersion = "dev 0.0.5";
@@ -128,9 +130,12 @@ void printInternal(struct Code code) {
 // #########################  MAIN FUNCTION  #########################
 
 int main(int argc, char **argv) {
+  adainit();
   int option;
   char* urclPath;
   //processStatement("~A== BITS* (  2- B    @     h )", "52", "67", "12");
+  hello_world();
+  token_testing("Hello from C!");
 
   // parse arguments
   while ((option = getopt(argc, argv, ":hcuknvt:e:p:o:")) != -1) {
@@ -243,5 +248,6 @@ int main(int argc, char **argv) {
     lineIndex++;
   }
   free(code.lines);
+  adafinal();
   return 0;
 }
