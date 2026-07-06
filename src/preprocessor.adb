@@ -1,9 +1,26 @@
+-- preprocessor.adb: parse and compute CleanURCL preprocessor statements
+-- Copyright (C) 2025-2026, Ada (Tape), <adadispenser@gmail.com>
+--
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU Affero General Public License as published
+-- by the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+--
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU Affero General Public License for more details.
+--
+-- You should have received a copy of the GNU Affero General Public License
+-- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 with Ada.Text_IO;
 with Interfaces.C;
 with Interfaces.C_Streams;
 with Ada.Text_IO.C_Streams;
 with Ada.Strings.Unbounded;
 with Ada.Containers.Vectors;
+with Ada.Exceptions;
 
 use Ada.Text_IO;
 use Interfaces.C_Streams;
@@ -21,6 +38,7 @@ package body Preprocessor is
     Element_Type => Ada.Strings.Unbounded.Unbounded_String
   );
 
+   
 
    procedure HelloWorld is
       C_Out_File : Ada.Text_IO.File_Type;
@@ -32,17 +50,6 @@ package body Preprocessor is
       );
       Put_Line (C_Out_File, "Hello from Ada!");
    end HelloWorld;
-
-   procedure Print_Line (Text : String) is
-      C_Out_File : Ada.Text_IO.File_Type;
-   begin
-      Open (
-         File => C_Out_File, 
-         Mode => Ada.Text_IO.Out_File, 
-         C_Stream => Interfaces.C_Streams.stdout
-      );
-      Put_Line (C_Out_File, Text);
-   end Print_Line;
 
    procedure TokenTesting (C_String : Interfaces.C.char_array) is
       Ada_String : String := Interfaces.C.To_Ada (
@@ -63,9 +70,10 @@ package body Preprocessor is
       end loop;
       TokenVector.Append(Token);
 
-      for Tok : Ada.Strings.Unbounded.Unbounded_String of TokenVector loop
-         Print_Line (To_String (Tok));
+      for I in TokenVector.First_Index .. TokenVector.Last_Index loop
+         Put_Line(To_String (TokenVector.Element (I)));
       end loop;
+
    end TokenTesting;
 
 end Preprocessor;

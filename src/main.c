@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
   char* urclPath;
   //processStatement("~A== BITS* (  2- B    @     h )", "52", "67", "12");
   hello_world();
-  token_testing("Hello from C!");
+  token_testing("This string was sent from C and is being parsed by Ada!");
 
   // parse arguments
   while ((option = getopt(argc, argv, ":hcuknvt:e:p:o:")) != -1) {
@@ -226,7 +226,7 @@ int main(int argc, char **argv) {
 
   struct Code code = tokenize(codeText);
   
-  printInternal(code);
+  //printInternal(code);
 
   //parse(&code, translationYaml);
   
@@ -235,6 +235,7 @@ int main(int argc, char **argv) {
 
 
   // free everything
+  // there's a double free in here somehwere
   /*
   __uint64_t lineIndex = 0;
   while (lineIndex < code.lineCount) {
@@ -251,8 +252,11 @@ int main(int argc, char **argv) {
   free(code.lines);
   */
 
+
   // terminate everything
+  // note: even when adafinal doesn't return an error, it will still terminate the program
+  // so don't try to run anything after adafinal is called
+  // the return statement here is just to keep the c compiler happy
   adafinal();
-  printf("hiiiiii :3");
   return 0;
 }
