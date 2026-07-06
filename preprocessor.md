@@ -59,7 +59,7 @@ Modifiers can be added using the `@` symbol followed by one or more modifiers.
 
 Example 4:
 ```
-{A@hu}
+{A@h}
 ```
 
 If used on registers, preprocessor will throw an error.   
@@ -72,18 +72,6 @@ You can access the lower half of an immediate value with `l`.
 Example 5:
 ```
 limm {A},{B@h},{C@l}
-```
-
-#### Signedness
-You can cast an immediate as signed with `s`.
-You can cast an immediate as unsigned with `u`.
-
-Example 6:
-```
-...
-"imm {A},{B@u}",
-"sra {A},{B},{C@s}"
-...
 ```
 
 #### Negation / Bitwise NOT
