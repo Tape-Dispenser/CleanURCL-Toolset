@@ -1,7 +1,7 @@
 /*
  * parse.c: parses extra data from URCL code for the next step in a transpiler toolchain,
  *          along with doing error checking
- * Copyright (C) 2025, Ada (Tape), <adadispenser@gmail.com>
+ * Copyright (C) 2025-2026, Ada (Tape), <adadispenser@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -94,6 +94,16 @@ void parse(struct Code* input, struct fy_document* translations) {
       else if (count > 1) {
         fprintf(stderr, "Error in provided translation file, expected 0 or 1 definitions of \"/config/cpu/data-bus\", got %u.", count);
       }
+
+      // step 3: convert strings to immediates
+
+      // step 4: replace all strings and constants with decimal immediates
+
+      // step 5: convert hex, bin, and octal imms to decimal
+
+      // step 6: calculate token types
+
+      // step 7: store token information in the Code structure
 
 
 

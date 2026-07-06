@@ -1,7 +1,7 @@
 /*
  * parse.h: parses URCL code into structs useable by the next step in a transpiler toolchain,
  *          along with doing error checking
- * Copyright (C) 2025, Ada (Tape), <adadispenser@gmail.com>
+ * Copyright (C) 2025-2026, Ada (Tape), <adadispenser@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published

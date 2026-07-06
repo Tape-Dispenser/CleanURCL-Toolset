@@ -1,6 +1,6 @@
 /*
  * main.c: CleanURCL Transpiler main function
- * Copyright (C) 2025, Ada (Tape), <adadispenser@gmail.com>
+ * Copyright (C) 2025-2026, Ada (Tape), <adadispenser@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -48,7 +48,7 @@ char* toolsetVersion = "dev 0.0.5";
 
 void help() {
   printf("CleanURCL Tools version %s\n", toolsetVersion);
-  puts("Copyright (C) 2025, under the GNU Affero General Public License version 3.");
+  puts("Copyright (C) 2025-2026, under the GNU Affero General Public License version 3.");
   puts("By Ada (Tape) adadispenser@gmail.com");
   puts("For reporting issues go to https://github.com/Tape-Dispenser/CleanURCL-Toolset/issues");
   puts("");
@@ -235,6 +235,7 @@ int main(int argc, char **argv) {
 
 
   // free everything
+  /*
   __uint64_t lineIndex = 0;
   while (lineIndex < code.lineCount) {
     struct Line line = code.lines[lineIndex];
@@ -248,6 +249,10 @@ int main(int argc, char **argv) {
     lineIndex++;
   }
   free(code.lines);
+  */
+
+  // terminate everything
   adafinal();
+  printf("hiiiiii :3");
   return 0;
 }
