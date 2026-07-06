@@ -5,7 +5,7 @@
 GCCARGS="-Wall -Wextra"
 GCCDEBUGARGS="-Wall -Wextra -ggdb3"
 
-GNATARGS="-gnatX"
+GNATARGS=""
 GNATDEBUGARGS="--GCC=\"gcc -ggdb3\""
 
 LINKARGS="-lfyaml"
