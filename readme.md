@@ -20,3 +20,15 @@ This project is currently being reworked in C, and as such does not currently wo
 - `@DEBUG onwrite <A>`: pauses execution when memory address, register, or port `<A>` is written to. (not implemented)
 - `@DEBUG onread <A>`: pauses execution when memory address, register, or port `<A>` is read from. (not implemented)
 - `@{<statement>}` : defines a compile-time immediate statement, as defined in preprocessor.md (not implemented)
+
+## Build Instructions
+NOTE: Requires Bash to run the build script, gcc to compile the C code, and GNAT to compile the Ada code (I get GNAT through ALIRE)
+
+1. Clone the repository and open a terminal in the repository root directory
+2. Run ./make
+
+Compiled binary will be stored at /repo_root/build/urcltools
+
+
+No precompiled binaries will be provided at this time, nor will I port the build script for other platforms. Feel free to make your own build scripts.
+
